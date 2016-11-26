@@ -1,7 +1,7 @@
 
-data_request_xml <- function(testmode = F, namelist = character(0), nametype = "variable",
+bibloadr_request_xml <- function(namelist = character(0), nametype = "variable",
                              level = character(0), cbtype = character(0), subclist = character(0),
-                             AllowNullIds = F, log = F) {
+                             allow_null_ids = F, log = F, testmode = F) {
     
     # end of line for xml building
     eol <- "\n"
@@ -21,7 +21,7 @@ data_request_xml <- function(testmode = F, namelist = character(0), nametype = "
     # optional xml elements
     el_CB <- ifelse(length(cbtype)>0, paste0("<CodeBook>",cbtype,"</CodeBook>",eol), "")
     el_ML <- ifelse(length(level)>0, paste0("<MeasurementLevel>",level,"</MeasurementLevel>",eol), "")
-    el_AN <- ifelse(AllowNullIds, paste0("<AllowNullIds>On</AllowNullIds>",eol), "")
+    el_AN <- ifelse(allow_null_ids, paste0("<AllowNullIds>On</AllowNullIds>",eol), "")
     if (log) {
         el_LG <- paste0("<LogRequest>On</LogRequest>",eol)
         el_UN <- paste0("<User>","BiBUser","</User>",eol)
@@ -50,11 +50,21 @@ data_request_xml <- function(testmode = F, namelist = character(0), nametype = "
 
 }
 
-open_bibloadr_db <- function(dev = F) {
+read_varfile <- function(varfile) {
+  
+  varlist <- readLines(varfile)
+
+  varlist <- varlist[nchar(varlist) > 0]
+  
+  return(varlist)
+  
+}
+
+open_bibloadr_db <- function(devmode = F) {
   
   require(RODBC)
   
-  if(dev) {
+  if(devmode) {
     connection_string <- "Driver={SQL Server Native Client 10.0};Server=BHTS-RESEARCHDV;Database=ResearchMeta;Trusted_Connection=yes"
   } else {
     connection_string <- "Driver={SQL Server Native Client 10.0};Server=BHTS-RESEARCH1\\BIB;Database=ResearchMeta;Trusted_Connection=yes"
@@ -70,4 +80,30 @@ close_bibloadr_db <- function() {
   
   odbcClose(BIBLOADR_db)
 
+}
+
+get_bibloadr_data <- function(varfile = character(0), varlist = character(0), level = character(0),
+                              allow_null_ids = F, log = F, testmode = F, devmode = F) {
+  
+  if(length(varfile) > 0) varlist <- c(read_varfile(varfile), varlist)
+  
+  if(length(varlist) == 0) stop("No variables found in request.")
+  
+  sql_start <- "EXEC [ResearchMeta].[Explorer].[GetVariableData]\n@DataRequest = N'"
+  
+  sql_xml <- bibloadr_request_xml(namelist = varlist, level = level, allow_null_ids = allow_null_ids, 
+                                  log = log, testmode = testmode)
+  
+  sql_end <- "';\n"
+  
+  query_string <- paste0(sql_start, sql_xml, sql_end)
+  
+  db <- open_bibloadr_db(devmode)
+
+  dat <- sqlQuery(db, query_string)
+  
+  close_bibloadr_db()
+  
+  return(dat)
+  
 }
