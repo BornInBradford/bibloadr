@@ -1,4 +1,6 @@
 
+# Generate XML for data request, to be submitted to database function
+# returns character containing XML string
 bibloadr_request_xml <- function(namelist = character(0), nametype = "variable",
                              level = character(0), cbtype = character(0), subclist = character(0),
                              allow_null_ids = F, log = F, testmode = F) {
@@ -50,6 +52,8 @@ bibloadr_request_xml <- function(namelist = character(0), nametype = "variable",
 
 }
 
+# Read a variable name file and return as character vector
+# strips zero length strings (blank lines)
 read_varfile <- function(varfile) {
   
   varlist <- readLines(varfile)
@@ -60,6 +64,8 @@ read_varfile <- function(varfile) {
   
 }
 
+# return a connection to the bibloadr database for submitting the data request XML
+# stores it in global var BIBLOADR_db
 open_bibloadr_db <- function(devmode = F) {
   
   require(RODBC)
@@ -76,19 +82,26 @@ open_bibloadr_db <- function(devmode = F) {
   
 }
 
+# close connection to bibloadr database, assuming connection was opened using open_bibloadr_db
+# i.e. connection is stored in BIBLOADR_db
 close_bibloadr_db <- function() {
   
   odbcClose(BIBLOADR_db)
 
 }
 
+# takes data request parameters and submits to bibloadr db, returning data frame
+# concatenates variables in varlist character vector to variables in varfile
 get_bibloadr_data <- function(varfile = character(0), varlist = character(0), level = character(0),
                               allow_null_ids = F, log = F, testmode = F, devmode = F) {
   
+  # concatenate varlist vars to varfile vars
   if(length(varfile) > 0) varlist <- c(read_varfile(varfile), varlist)
   
+  # if we still don't have any, exit with error
   if(length(varlist) == 0) stop("No variables found in request.")
   
+  # SQL string building
   sql_start <- "EXEC [ResearchMeta].[Explorer].[GetVariableData]\n@DataRequest = N'"
   
   sql_xml <- bibloadr_request_xml(namelist = varlist, level = level, allow_null_ids = allow_null_ids, 
@@ -98,12 +111,15 @@ get_bibloadr_data <- function(varfile = character(0), varlist = character(0), le
   
   query_string <- paste0(sql_start, sql_xml, sql_end)
   
+  # do database bit to get data
   db <- open_bibloadr_db(devmode)
 
   dat <- sqlQuery(db, query_string)
   
   close_bibloadr_db()
   
+  # return data frame
   return(dat)
   
 }
+
