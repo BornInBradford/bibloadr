@@ -1,7 +1,7 @@
 
-dataRequestXML <- function(testmode = F, namelist = character(0), nametype = "variable",
-                           level = character(0), cbtype = character(0), subclist = character(0),
-                           AllowNullIds = F, log = F) {
+data_request_xml <- function(testmode = F, namelist = character(0), nametype = "variable",
+                             level = character(0), cbtype = character(0), subclist = character(0),
+                             AllowNullIds = F, log = F) {
     
     # end of line for xml building
     eol <- "\n"
@@ -47,5 +47,27 @@ dataRequestXML <- function(testmode = F, namelist = character(0), nametype = "va
     xmlv <- paste0(xmlv, paste0(namelist, sep = "", collapse = ""), el_Nlist[2], eol, el_DR[2], eol)
     
     return(xmlv)
+
+}
+
+open_bibloadr_db <- function(dev = F) {
+  
+  require(RODBC)
+  
+  if(dev) {
+    connection_string <- "Driver={SQL Server Native Client 10.0};Server=BHTS-RESEARCHDV;Database=ResearchMeta;Trusted_Connection=yes"
+  } else {
+    connection_string <- "Driver={SQL Server Native Client 10.0};Server=BHTS-RESEARCH1\\BIB;Database=ResearchMeta;Trusted_Connection=yes"
+  }
+  
+  BIBLOADR_db <<- odbcDriverConnect(connection_string)
+  
+  return(BIBLOADR_db)
+  
+}
+
+close_bibloadr_db <- function() {
+  
+  odbcClose(BIBLOADR_db)
 
 }
