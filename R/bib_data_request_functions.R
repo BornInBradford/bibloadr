@@ -90,6 +90,22 @@ close_bibloadr_db <- function() {
 
 }
 
+# submit sql query to bibloadr database
+# returns dataframe or error string
+bibloadr_query <- function(query_string, devmode = F) {
+  
+  # do database bit to get data
+  db <- open_bibloadr_db(devmode)
+  
+  dat <- sqlQuery(db, query_string)
+  
+  close_bibloadr_db()
+  
+  # return data frame
+  return(dat)
+  
+}
+
 # takes data request parameters and submits to bibloadr db, returning data frame
 # concatenates variables in varlist character vector to variables in varfile
 get_bibloadr_data <- function(varfile = character(0), varlist = character(0), level = character(0),
@@ -111,12 +127,7 @@ get_bibloadr_data <- function(varfile = character(0), varlist = character(0), le
   
   query_string <- paste0(sql_start, sql_xml, sql_end)
   
-  # do database bit to get data
-  db <- open_bibloadr_db(devmode)
-
-  dat <- sqlQuery(db, query_string)
-  
-  close_bibloadr_db()
+  dat <- bibloadr_query(query_string, devmode)
   
   # return data frame
   return(dat)
