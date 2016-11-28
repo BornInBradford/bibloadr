@@ -1,0 +1,3 @@
+eth0eth9gp
+adminmdob
+has_gwasc
