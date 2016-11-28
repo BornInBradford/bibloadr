@@ -52,15 +52,15 @@ bibloadr_request_xml <- function(namelist = character(0), nametype = "variable",
 
 }
 
-# Read a variable name file and return as character vector
+# Read a name file and return as character vector
 # strips zero length strings (blank lines)
-read_varfile <- function(varfile) {
+read_namefile <- function(namefile) {
   
-  varlist <- readLines(varfile)
+  namelist <- readLines(namefile)
 
-  varlist <- varlist[nchar(varlist) > 0]
+  namelist <- namelist[nchar(namelist) > 0]
   
-  return(varlist)
+  return(namelist)
   
 }
 
@@ -104,6 +104,16 @@ bibloadr_query <- function(query_string, devmode = F) {
   # return data frame
   return(dat)
   
+}
+
+# constructs a namelist vector from a file and a character vector
+make_namelist <- function(namefile = character(0), namelist = character(0)) {
+  
+  # concatenate namelist names to namefile names
+  if(length(namefile) > 0) namelist <- c(read_namefile(namefile),namelist)
+  
+  return(namelist)
+
 }
 
 # takes data request parameters and submits to bibloadr db, returning data frame
