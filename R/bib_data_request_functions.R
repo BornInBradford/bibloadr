@@ -148,7 +148,7 @@ get_bibloadr_data <- function(varfile = character(0), varlist = character(0), le
 # takes metadata request parameters and submits to bibloadr db, returning data frame
 # concatenates variables in varlist character vector to variables in varfile
 # default type is varlong
-get_bibloadr_meta <- function(varfile = character(0), varlist = character(0), level = character(0),
+get_bibloadr_meta <- function(varfile = character(0), varlist = character(0),
                               type = "varlong", testmode = F, devmode = F) {
   
   # concatenate varlist vars to varfile vars
@@ -160,7 +160,7 @@ get_bibloadr_meta <- function(varfile = character(0), varlist = character(0), le
   # SQL string building
   sql_start <- "EXEC [ResearchMeta].[Explorer].[GetVariableMeta]\n@DataRequest = N'"
   
-  sql_xml <- bibloadr_request_xml(namelist = varlist, level = level, cbtype = type, testmode = testmode)
+  sql_xml <- bibloadr_request_xml(namelist = varlist, cbtype = type, testmode = testmode)
   
   sql_end <- "';\n"
   
