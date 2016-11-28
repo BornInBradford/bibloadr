@@ -122,7 +122,7 @@ get_bibloadr_data <- function(varfile = character(0), varlist = character(0), le
                               allow_null_ids = F, log = F, testmode = F, devmode = F) {
   
   # concatenate varlist vars to varfile vars
-  if(length(varfile) > 0) varlist <- c(read_varfile(varfile), varlist)
+  varlist <- make_namelist(varfile, varlist)
   
   # if we still don't have any, exit with error
   if(length(varlist) == 0) stop("No variables found in request.")
