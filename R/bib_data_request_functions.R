@@ -97,7 +97,7 @@ bibloadr_query <- function(query_string, devmode = F) {
   # do database bit to get data
   db <- open_bibloadr_db(devmode)
   
-  dat <- sqlQuery(db, query_string)
+  dat <- sqlQuery(db, query_string, stringsAsFactors = F)
   
   close_bibloadr_db()
   
