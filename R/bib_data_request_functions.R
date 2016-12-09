@@ -116,10 +116,17 @@ make_namelist <- function(namefile = character(0), namelist = character(0)) {
 
 }
 
+# label a dataframe using meta-data provided in var_labels and val_labels
+label_data <- function (dat, var_labels, val_labels) {
+  
+  return(dat)
+  
+}
+
 # takes data request parameters and submits to bibloadr db, returning data frame
 # concatenates variables in varlist character vector to variables in varfile
 get_bibloadr_data <- function(varfile = character(0), varlist = character(0), level = character(0),
-                              allow_null_ids = F, log = F, testmode = F, devmode = F) {
+                              allow_null_ids = F, label = T, log = F, testmode = F, devmode = F) {
   
   # concatenate varlist vars to varfile vars
   varlist <- make_namelist(varfile, varlist)
@@ -138,6 +145,15 @@ get_bibloadr_data <- function(varfile = character(0), varlist = character(0), le
   query_string <- paste0(sql_start, sql_xml, sql_end)
   
   dat <- bibloadr_query(query_string, devmode)
+  
+  # if we need to label variables, do that now
+  if (label) {
+    var_labels <- get_bibloadr_meta (varfile = varfile, varlist = varlist, type = "varlong",
+                                     testmode = testmode, devmode = devmode)
+    val_labels <- get_bibloadr_meta (varfile = varfile, varlist = varlist, type = "code",
+                                     testmode = testmode, devmode = devmode)
+    dat <- label_data (dat, var_labels, val_labels)
+  }
   
   # return data frame
   return(dat)
