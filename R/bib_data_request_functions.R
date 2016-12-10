@@ -117,7 +117,34 @@ make_namelist <- function(namefile = character(0), namelist = character(0)) {
 }
 
 # label a dataframe using meta-data provided in var_labels and val_labels
-label_data <- function (dat, var_labels, val_labels) {
+label_data <- function (dat, var_labels, val_labels, 
+                        ignore = c("ChildID", "PregnancyID", "MotherID")) {
+  
+  # how many columns to ignore - these must be at the left hand side
+  n_ignore <- sum(names(dat) %in% ignore)
+  # create ignore vector
+  skip <- rep(NA, n_ignore)
+  # add variable attributes
+  attr(dat, "VariableLabel") <- c(skip, var_labels$VariableLabel)
+  attr(dat, "Description") <- c(skip, var_labels$Description)
+  attr(dat, "ValueType") <- c(skip, var_labels$ValueType)
+  attr(dat, "CodeSetName") <- c(skip, var_labels$CodeSetName)
+  attr(dat, "MeasureType") <- c(skip, var_labels$MeasureType)
+  attr(dat, "SourceName") <- c(skip, var_labels$SourceName)
+
+  # find variables that need value labels
+  to_factors <- names(dat)[attr(dat, "ValueType") == "Categorical"]
+  to_factors <- to_factors[!is.na(to_factors)]
+  # add value labels
+  for(x in 1:length(to_factors)) {
+    # column number of the variable to be labelled
+    data_col <- which(names(dat) == to_factors[x])
+    # rows in the codebook to use for labels
+    label_row <- which(val_labels$VariableName == to_factors[x])
+    # do labelling
+    dat[data_col] <- factor(dat[[data_col]], levels=val_labels$Value[label_row],
+                            labels=val_labels$ValueLabel[label_row])
+    }
   
   return(dat)
   
