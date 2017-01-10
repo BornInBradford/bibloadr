@@ -28,7 +28,7 @@ bibloadr_request_xml <- function(namelist = character(0), nametype = "variable",
     el_CB <- ifelse(length(cbtype)>0, paste0("<CodeBook>",cbtype,"</CodeBook>",eol), "")
     el_ML <- ifelse(length(level)>0, paste0("<MeasurementLevel>",level,"</MeasurementLevel>",eol), "")
     el_AN <- ifelse(allow_null_ids, paste0("<AllowNullIds>On</AllowNullIds>",eol), "")
-    al_AH <- ifelse(allow_hidden, paste0("<AllowHidden>On</AllowHidden>",eol), "")
+    el_AH <- ifelse(allow_hidden, paste0("<AllowHidden>On</AllowHidden>",eol), "")
     if (log) {
         el_LG <- paste0("<LogRequest>On</LogRequest>",eol)
     } else {
@@ -180,7 +180,8 @@ get_bibloadr_data <- function(varfile = character(0), varlist = character(0), le
   dat <- bibloadr_query(query_string, devmode)
   
   # if we need to label variables, do that now
-  if (label) {
+  # only if bibloadr_query did not return error string
+  if (label && typeof(dat) != "character") {
     var_labels <- get_bibloadr_meta (varfile = varfile, varlist = varlist, type = "varlong",
                                      testmode = testmode, devmode = devmode)
     val_labels <- get_bibloadr_meta (varfile = varfile, varlist = varlist, type = "code",
