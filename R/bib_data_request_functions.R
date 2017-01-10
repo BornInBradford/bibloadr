@@ -3,7 +3,7 @@
 # returns character containing XML string
 bibloadr_request_xml <- function(namelist = character(0), nametype = "variable",
                              level = character(0), cbtype = character(0), subclist = character(0),
-                             allow_null_ids = F, allow_hidden = F, log = F, testmode = F) {
+                             allow_null_ids = F, allow_hidden = F, user = "BiBUser", log = F, testmode = F) {
     
     # end of line for xml building
     eol <- "\n"
@@ -20,6 +20,8 @@ bibloadr_request_xml <- function(namelist = character(0), nametype = "variable",
         el_Nattr <- c("<VariableName>","</VariableName>")
     }
     
+    el_UN <- paste0("<User>",user,"</User>",eol)
+    
     # optional xml elements
     el_CB <- ifelse(length(cbtype)>0, paste0("<CodeBook>",cbtype,"</CodeBook>",eol), "")
     el_ML <- ifelse(length(level)>0, paste0("<MeasurementLevel>",level,"</MeasurementLevel>",eol), "")
@@ -27,10 +29,8 @@ bibloadr_request_xml <- function(namelist = character(0), nametype = "variable",
     al_AH <- ifelse(allow_hidden, paste0("<AllowHidden>On</AllowHidden>",eol), "")
     if (log) {
         el_LG <- paste0("<LogRequest>On</LogRequest>",eol)
-        el_UN <- paste0("<User>","BiBUser","</User>",eol)
     } else {
         el_LG <- ""
-        el_UN <- ""
     }
     el_TM <- ifelse(testmode, paste0("<TestMode>On</TestMode>",eol), "")
     el_SC <- ""
@@ -166,8 +166,9 @@ get_bibloadr_data <- function(varfile = character(0), varlist = character(0), le
   # SQL string building
   sql_start <- "EXEC [ResearchMeta].[Explorer].[GetVariableData]\n@DataRequest = N'"
   
+  # needs to find logged in username
   sql_xml <- bibloadr_request_xml(namelist = varlist, level = level, allow_null_ids = allow_null_ids, 
-                                  allow_hidden = allow_hidden, log = log, testmode = testmode)
+                                  allow_hidden = allow_hidden, user = "MasonD", log = log, testmode = testmode)
   
   sql_end <- "';\n"
   
