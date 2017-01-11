@@ -1,0 +1,11 @@
+---
+title: "BiB Data Dictionary"
+output: html_document
+---
+
+```{r variable}
+variable <- meta[1, ]
+```
+
+## `r variable$VariableName`
+
