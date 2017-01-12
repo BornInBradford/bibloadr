@@ -3,7 +3,9 @@ title: "BiB Data Dictionary"
 output: html_document
 ---
 
-```{r setup}
+```{r setup, include = F}
+library(knitr)
+
 source("C:/repos/bibloadr/R/bib_data_request_functions.R")
 
 varfile <- "C:/repos/bibloadr/examples/variables.txt"
@@ -13,9 +15,45 @@ meta <- get_bibloadr_meta(varfile = varfile)
 codebook <- get_bibloadr_meta(varfile = varfile, type = "code")
 ```
 
-```{r variable}
-variable <- meta[1, ]
+```{r functions, include = F}
+
+variable <- function(n) {
+
+  var <- meta[n, ]
+  
+  var_block <- "
+
+# {{var$VariableName}}
+  
+## {{var$VariableLabel}}
+
+Type of measure: {{var$MeasureType}}
+  
+Value Type: {{var$ValueType}}
+
+{{var$Description}}
+  
+***
+
+    "
+  return(knit_expand(text = var_block))
+
+}
+
 ```
 
-## `r variable$VariableName`
+```{r varlist, ref.label = "functions", include = F}
+
+out <- character(0)
+
+for(n in 1:nrow(meta)) {
+  
+  out <- c(out, variable(n))
+  
+}
+
+```
+
+`r knit(text = out)`
+
 
