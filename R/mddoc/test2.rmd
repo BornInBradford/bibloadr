@@ -15,7 +15,7 @@ meta <- get_bibloadr_meta(varfile = varfile)
 codebook <- get_bibloadr_meta(varfile = varfile, type = "code")
 ```
 
-```{r functions, include = FALSE}
+```{r dictionary, echo = FALSE}
 
 variable <- function(n) {
 
@@ -40,10 +40,6 @@ Value Type: {{var$ValueType}}
 
 }
 
-```
-
-```{r varlist, include=FALSE, ref.label="functions"}
-
 out <- character(0)
 
 for(n in 1:nrow(meta)) {
@@ -52,13 +48,7 @@ for(n in 1:nrow(meta)) {
   
 }
 
-```
-
-```{r dictionary, echo=TRUE, ref.label="varlist"}
-
-knit(text = out)
-
-cat(out)
-
 
 ```
+
+`r knit(text = out)`
