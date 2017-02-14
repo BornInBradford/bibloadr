@@ -27,8 +27,9 @@ coding <- function(v) {
   
   if(nrow(c) > 0) {
     
-    codeblock <- paste0(codeblock, {{c$Value}}, " = ", {{c$ValueLabel}}, "\n")
-    
+    codeblock <- paste0(codeblock, c$Value, " = ", c$ValueLabel, "\n")
+    codeblock <- c(codeblock, "", "Coding ID: {{c$CodeSetName[1]}}")
+  
   }
   
   return(knit_expand(text = codeblock))
@@ -69,7 +70,7 @@ source <- function(src) {
 
 ### Measurement level: {{src$MeasurementLevel}}
 
-Short name: {{src$SourceName}}
+Source ID: {{src$SourceName}}
 
 {{src$Description}}
 
