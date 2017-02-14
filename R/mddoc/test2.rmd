@@ -12,7 +12,8 @@ source("C:/repos/bibloadr/R/bib_data_request_functions.R")
 varfile <- "C:/repos/bibloadr/examples/variables.txt"
 
 dat <- get_bibloadr_data(varfile = varfile, level = "child", label = TRUE, allow_hidden = TRUE)
-meta <- get_bibloadr_meta(varfile = varfile)
+meta <- get_bibloadr_meta(varfile = varfile, type = "varsection")
+sourcemeta <- get_bibloadr_meta(varfile = varfile, type = "sourcelong")
 codebook <- get_bibloadr_meta(varfile = varfile, type = "code")
 ```
 
@@ -34,10 +35,8 @@ coding <- function(v) {
   
 }
 
-variable <- function(n) {
+variable <- function(var) {
 
-  var <- meta[n, ]
-  
   var$Description <- ifelse(is.na(var$Description), "", var$Description)
   
   var_block <- paste0("
@@ -62,11 +61,58 @@ Value Type: {{var$ValueType}}
 
 }
 
+source <- function(src) {
+
+  src_block <- "
+  
+# {{src$SourceLongName}}
+
+### Measurement level: {{src$MeasurementLevel}}
+
+Short name: {{src$SourceName}}
+
+{{src$Description}}
+
+***
+
+"
+  
+  return(knit_expand(text = src_block))
+  
+}
+
+
+
+
 out <- character(0)
 
-for(n in 1:nrow(meta)) {
+for(s in 1:nrow(sourcemeta)) {
   
-  out <- c(out, variable(n))
+  out <- c(out, source(src = sourcemeta[s, ]))
+  
+  meta_bysource <- filter(meta, SourceName == sourcemeta$SourceName[s])
+  
+  meta_bysource$SectionName <- ifelse(is.na(meta_bysource$SectionName), "<GENERAL SECTION>", meta_bysource$SectionName)
+  
+  sections <- unique(meta_bysource$SectionName)
+  
+  for(se in 1:length(sections)) {
+
+    meta_bysection <- filter(meta_bysource, SectionName == sections[se])
+    
+    if(sections[se] != "<GENERAL SECTION>") {
+      
+      out <- c(out, knit_expand(text = "## {{sections[se]}}"))
+    
+      }
+    
+    for(v in 1:nrow(meta_bysection)) {
+      
+      out <- c(out, variable(var = meta_bysection[v, ]))
+      
+    }
+    
+  } 
   
 }
 
