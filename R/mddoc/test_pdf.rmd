@@ -1,0 +1,117 @@
+---
+title: "BiB Data Dictionary"
+output: pdf_document
+---
+
+```{r setup, include = FALSE}
+library(knitr)
+library(dplyr)
+library(pander)
+
+
+source("C:/repos/bibloadr/R/bib_data_request_functions.R")
+
+varfile <- "C:/repos/bibloadr/examples/variables.txt"
+
+dat <- get_bibloadr_data(varfile = varfile, level = "child", label = TRUE, allow_hidden = TRUE)
+meta <- get_bibloadr_meta(varfile = varfile, type = "varsection")
+sourcemeta <- get_bibloadr_meta(varfile = varfile, type = "sourcelong")
+codebook <- get_bibloadr_meta(varfile = varfile, type = "code")
+```
+
+```{r dictionary, echo = FALSE}
+
+coding <- function(v) {
+  
+  c <- filter(codebook, VariableName == v & !is.na(CodeSetName))
+  
+  codeblock <- ""
+  
+  if(nrow(c) > 0) {
+    
+    codeblock <- paste0(codeblock, c$Value, " = ", c$ValueLabel, "\n")
+    codeblock <- c(codeblock, "", "Coding ID: {{c$CodeSetName[1]}}")
+  
+  }
+  
+  return(knit_expand(text = codeblock))
+  
+}
+
+vardescription <- function(var) {
+
+  var_block <- c("{{var$Description}}",
+                 "Type of measure: {{var$MeasureType}}",
+                 "Value Type: {{var$ValueType}}",
+                 coding(v = var$VariableName))
+  
+  return(knit_expand(text = var_block))
+
+}
+
+source <- function(src) {
+
+  src_block <- "
+  
+# {{src$SourceLongName}}
+
+### Measurement level: {{src$MeasurementLevel}}
+
+Source ID: {{src$SourceName}}
+
+{{src$Description}}
+
+***
+
+"
+  
+  return(knit_expand(text = src_block))
+  
+}
+
+
+
+
+out <- character(0)
+
+for(s in 1:nrow(sourcemeta)) {
+  
+  out <- c(out, source(src = sourcemeta[s, ]))
+  
+  meta_bysource <- filter(meta, SourceName == sourcemeta$SourceName[s])
+  
+  meta_bysource$SectionName <- ifelse(is.na(meta_bysource$SectionName), "<GENERAL SECTION>", meta_bysource$SectionName)
+  
+  sections <- unique(meta_bysource$SectionName)
+  
+  for(se in 1:length(sections)) {
+
+    meta_bysection <- filter(meta_bysource, SectionName == sections[se])
+    
+    section_table <- select(meta_bysection, VariableName, VariableLabel)
+    
+    if(sections[se] != "<GENERAL SECTION>") {
+      
+      out <- c(out, knit_expand(text = "## {{sections[se]}}"))
+    
+    }
+    
+    for(v in 1:nrow(meta_bysection)) {
+      
+      section_table$Description[v] <- vardescription(var = meta_bysection[v, ])
+
+    }
+    
+    #panderOptions("keep.line.breaks", TRUE)
+    #out <- c(out, pander(section_table))
+    
+    out <- c(out, pandoc.table(section_table, keep.line.breaks = TRUE))
+    
+    } 
+  
+}
+
+
+```
+
+`r knit(text = out)`
