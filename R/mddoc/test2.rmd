@@ -5,6 +5,7 @@ output: html_document
 
 ```{r setup, include = FALSE}
 library(knitr)
+library(dplyr)
 
 source("C:/repos/bibloadr/R/bib_data_request_functions.R")
 
@@ -17,11 +18,29 @@ codebook <- get_bibloadr_meta(varfile = varfile, type = "code")
 
 ```{r dictionary, echo = FALSE}
 
+coding <- function(v) {
+  
+  c <- filter(codebook, VariableName == v & !is.na(CodeSetName))
+  
+  codeblock <- ""
+  
+  if(nrow(c) > 0) {
+    
+    codeblock <- paste0(codeblock, {{c$Value}}, " = ", {{c$ValueLabel}}, "\n")
+    
+  }
+  
+  return(knit_expand(text = codeblock))
+  
+}
+
 variable <- function(n) {
 
   var <- meta[n, ]
   
-  var_block <- "
+  var$Description <- ifelse(is.na(var$Description), "", var$Description)
+  
+  var_block <- paste0("
 
 # {{var$VariableName}}
   
@@ -32,10 +51,13 @@ Type of measure: {{var$MeasureType}}
 Value Type: {{var$ValueType}}
 
 {{var$Description}}
+
+", coding(v = var$VariableName), "
   
 ***
 
-    "
+    ")
+  
   return(knit_expand(text = var_block))
 
 }
