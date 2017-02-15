@@ -1,6 +1,8 @@
 ---
 title: "BiB Data Dictionary"
-output: pdf_document
+output:
+  html_document: default
+  pdf_document: default
 ---
 
 ```{r setup, include = FALSE}
@@ -40,9 +42,9 @@ coding <- function(v) {
 
 vardescription <- function(var) {
 
-  var_block <- c("{{var$Description}}",
-                 "Type of measure: {{var$MeasureType}}",
-                 "Value Type: {{var$ValueType}}",
+  var_block <- c("{{var$Description}}\n\n",
+                 "Type of measure: {{var$MeasureType}}\n",
+                 "Value Type: {{var$ValueType}}\n",
                  coding(v = var$VariableName))
   
   return(knit_expand(text = var_block))
@@ -102,10 +104,11 @@ for(s in 1:nrow(sourcemeta)) {
 
     }
     
-    #panderOptions("keep.line.breaks", TRUE)
-    #out <- c(out, pander(section_table))
+    panderOptions("keep.line.breaks", TRUE)
+    #out <- c(out, pander(section_table, keep.line.breaks = TRUE))
+    out <- c(out, pander(section_table))
     
-    out <- c(out, pandoc.table(section_table, keep.line.breaks = TRUE))
+    #out <- c(out, pandoc.table(section_table, keep.line.breaks = TRUE))
     
     } 
   
