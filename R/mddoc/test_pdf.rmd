@@ -3,6 +3,8 @@ title: "BiB Data Dictionary"
 output:
   pdf_document: 
     toc: yes
+    includes:
+        in_header: data_dict_style.sty 
   html_document: default
 ---
 
@@ -64,8 +66,6 @@ Source ID: {{src$SourceName}}
 
 {{src$Description}}
 
-***
-
 "
   
   return(knit_expand(text = src_block))
@@ -91,7 +91,7 @@ for(s in 1:nrow(sourcemeta)) {
 
     meta_bysection <- filter(meta_bysource, SectionName == sections[se])
     
-    section_table <- select(meta_bysection, VariableName, VariableLabel)
+    section_table <- select(meta_bysection, Variable = VariableName, `Variable Label` = VariableLabel)
     
     if(sections[se] != "<GENERAL SECTION>") {
       
@@ -101,22 +101,16 @@ for(s in 1:nrow(sourcemeta)) {
     
     for(v in 1:nrow(meta_bysection)) {
       
-      section_table$Description[v] <- vardescription(var = meta_bysection[v, ])
+      section_table$Details[v] <- vardescription(var = meta_bysection[v, ])
 
     }
     
     panderOptions("keep.line.breaks", TRUE)
     panderOptions("table.alignment.default", "left")
     panderOptions("table.alignment.rownames", "left")
-    #panderOptions("table.style", "grid")
-    
-    check <- panderOptions()
-    
+    panderOptions("table.split.table", Inf)
+  
     out <- c(out, pander(section_table))
-    
-    #out <- c(out, pandoc.table.return(section_table, keep.line.breaks = TRUE,
-    #                                          table.alignment.default = "left",
-    #                                          table.alignment.rownames = "left"))
     
     } 
   
