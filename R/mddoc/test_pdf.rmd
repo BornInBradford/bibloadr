@@ -1,8 +1,9 @@
 ---
 title: "BiB Data Dictionary"
 output:
+  pdf_document: 
+    toc: yes
   html_document: default
-  pdf_document: default
 ---
 
 ```{r setup, include = FALSE}
@@ -31,7 +32,7 @@ coding <- function(v) {
   
   if(nrow(c) > 0) {
     
-    codeblock <- paste0(codeblock, c$Value, " = ", c$ValueLabel, "\n")
+    codeblock <- paste0(codeblock, c$Value, " = ", c$ValueLabel, "\\\n")
     codeblock <- c(codeblock, "", "Coding ID: {{c$CodeSetName[1]}}")
   
   }
@@ -41,10 +42,10 @@ coding <- function(v) {
 }
 
 vardescription <- function(var) {
-
-  var_block <- c("{{var$Description}}\n\n",
-                 "Type of measure: {{var$MeasureType}}\n",
-                 "Value Type: {{var$ValueType}}\n",
+  
+  var_block <- ifelse(is.na(var$Description), "", "{{var$Description}}\\\n")
+  var_block <- c("Type of measure: {{var$MeasureType}}\\\n",
+                 "Value Type: {{var$ValueType}}\\\n",
                  coding(v = var$VariableName))
   
   return(knit_expand(text = var_block))
@@ -105,10 +106,17 @@ for(s in 1:nrow(sourcemeta)) {
     }
     
     panderOptions("keep.line.breaks", TRUE)
-    #out <- c(out, pander(section_table, keep.line.breaks = TRUE))
+    panderOptions("table.alignment.default", "left")
+    panderOptions("table.alignment.rownames", "left")
+    #panderOptions("table.style", "grid")
+    
+    check <- panderOptions()
+    
     out <- c(out, pander(section_table))
     
-    #out <- c(out, pandoc.table(section_table, keep.line.breaks = TRUE))
+    #out <- c(out, pandoc.table.return(section_table, keep.line.breaks = TRUE,
+    #                                          table.alignment.default = "left",
+    #                                          table.alignment.rownames = "left"))
     
     } 
   
