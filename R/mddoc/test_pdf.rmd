@@ -1,10 +1,10 @@
 ---
 title: "BiB Data Dictionary"
 output:
-  pdf_document: 
-    toc: yes
+  pdf_document:
     includes:
-        in_header: data_dict_style.sty 
+      in_header: data_dict_style.sty
+    toc: yes
   html_document: default
 ---
 
@@ -34,8 +34,8 @@ coding <- function(v) {
   
   if(nrow(c) > 0) {
     
-    codeblock <- paste0(codeblock, c$Value, " = ", c$ValueLabel, "\\\n")
-    codeblock <- c(codeblock, "", "Coding ID: {{c$CodeSetName[1]}}")
+    codeblock <- paste0(c$Value, " = ", c$ValueLabel, "\\\n")
+    codeblock <- c("\\\nCoding:\\\n", codeblock, "", "Coding ID: {{c$CodeSetName[1]}}")
   
   }
   
@@ -46,9 +46,10 @@ coding <- function(v) {
 vardescription <- function(var) {
   
   var_block <- ifelse(is.na(var$Description), "", "{{var$Description}}\\\n")
-  var_block <- c("Type of measure: {{var$MeasureType}}\\\n",
-                 "Value Type: {{var$ValueType}}\\\n",
-                 coding(v = var$VariableName))
+  var_block <- c("{{var$MeasureType}}, {{var$ValueType}} value\\\n",
+                 "![Date value](Calendar-35.png)",
+                 #only works in html: "<img src='Calendar-512.png' alt='Date value' style='width: 35px;'/>\\\n",
+                 coding(v = var$VariableName), "\\\n")
   
   return(knit_expand(text = var_block))
 
@@ -109,7 +110,8 @@ for(s in 1:nrow(sourcemeta)) {
     panderOptions("table.alignment.default", "left")
     panderOptions("table.alignment.rownames", "left")
     panderOptions("table.split.table", Inf)
-  
+    panderOptions("table.split.cells", c(30, 20, 85))
+    
     out <- c(out, pander(section_table))
     
     } 
