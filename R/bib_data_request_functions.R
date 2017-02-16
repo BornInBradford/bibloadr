@@ -95,12 +95,12 @@ close_bibloadr_db <- function() {
 
 # submit sql query to bibloadr database
 # returns dataframe or error string
-bibloadr_query <- function(query_string, devmode = F) {
+bibloadr_query <- function(query_string, devmode = F, as.is = F) {
   
   # do database bit to get data
   db <- open_bibloadr_db(devmode)
   
-  dat <- sqlQuery(db, query_string, stringsAsFactors = F)
+  dat <- sqlQuery(db, query_string, stringsAsFactors = F, as.is = as.is)
   
   close_bibloadr_db()
   
