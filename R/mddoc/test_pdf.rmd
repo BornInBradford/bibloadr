@@ -22,6 +22,7 @@ meta <- get_bibloadr_meta(varfile = varfile, type = "varsection")
 sourcemeta <- get_bibloadr_meta(varfile = varfile, type = "sourcelong")
 codebook <- get_bibloadr_meta(varfile = varfile, type = "code")
 stats <- get_bibloadr_stats(varfile = varfile)
+meta <- merge(meta, stats, by = "VariableName")
 ```
 
 ```{r dictionary, echo = FALSE}
@@ -46,10 +47,9 @@ coding <- function(v) {
 vardescription <- function(var) {
   
   var_block <- ifelse(is.na(var$Description), "", "{{var$Description}}\\\n")
-  var_block <- c("{{var$MeasureType}}, {{var$ValueType}} value\\\n",
-                 "![Date value](Calendar-35.png)",
-                 #only works in html: "<img src='Calendar-512.png' alt='Date value' style='width: 35px;'/>\\\n",
-                 coding(v = var$VariableName), "\\\n")
+  var_block <- c(var_block, "{{var$MeasureType}}, {{var$ValueType}} value\\\n")
+  var_block <- c(var_block, "INSERT CONDITIONAL STATS HERE")
+  var_block <- c(var_block, coding(v = var$VariableName), "\\\n")
   
   return(knit_expand(text = var_block))
 
