@@ -18,10 +18,10 @@ source("C:/repos/bibloadr/R/bib_data_request_functions.R")
 
 varfile <- "C:/repos/bibloadr/examples/variables.txt"
 
-dat <- get_bibloadr_data(varfile = varfile, level = "child", label = TRUE, allow_hidden = TRUE)
 meta <- get_bibloadr_meta(varfile = varfile, type = "varsection")
 sourcemeta <- get_bibloadr_meta(varfile = varfile, type = "sourcelong")
 codebook <- get_bibloadr_meta(varfile = varfile, type = "code")
+stats <- get_bibloadr_stats(varfile = varfile)
 ```
 
 ```{r dictionary, echo = FALSE}
