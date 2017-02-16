@@ -222,3 +222,44 @@ get_bibloadr_meta <- function(varfile = character(0), varlist = character(0),
   return(dat)
   
 }
+
+
+# takes variable list, gets sources and requests stats for each
+# then merges them into one dataframe
+get_bibloadr_stats <- function(varfile = character(0), varlist = character(0),
+                               testmode = F, devmode = F) {
+  
+  # concatenate varlist vars to varfile vars
+  varlist <- make_namelist(varfile, varlist)
+  
+  # if we still don't have any, exit with error
+  if(length(varlist) == 0) stop("No variables found in request.")
+  
+  
+  # return data frame
+  return(dat)
+  
+  
+  
+  
+}
+
+
+
+# takes single sourcename parameter and retrieves stats
+# returns dataframe
+get_source_stats <- function(source_name = character(0), 
+                             testmode = F, devmode = F) {
+  
+  testmode = ifelse(testmode, 1, 0)
+
+  query_string <- paste0("EXEC [ResearchMeta].[Explorer].[GetSourceStats] @SourceName = '", 
+                        source_name, "', @TestMode = ", testmode, ";")
+
+  dat <- bibloadr_query(query_string, devmode)
+  
+  # return data frame
+  return(dat)
+  
+}
+
