@@ -235,7 +235,30 @@ get_bibloadr_stats <- function(varfile = character(0), varlist = character(0),
   # if we still don't have any, exit with error
   if(length(varlist) == 0) stop("No variables found in request.")
   
+  # get sources
+  src <- get_bibloadr_meta(varfile = varfile, varlist = varlist, type = "source",
+                            testmode = testmode, devmode = devmode)
   
+  # get variables
+  var <- get_bibloadr_meta(varfile = varfile, varlist = varlist, type = "var",
+                           testmode = testmode, devmode = devmode)
+  
+  var <- var[1]
+  
+  dat <- list()
+  
+  for(x in 1:nrow(src)) {
+    
+    dat[[x]] <- get_source_stats(source_name = src$SourceName[x],
+                               testmode = testmode,
+                               devmode = devmode)
+    
+    dat[[x]] <- merge(var, dat[[x]], by = "VariableName")
+    
+  }
+  
+  dat <- do.call(rbind, dat)
+    
   # return data frame
   return(dat)
   
@@ -256,7 +279,7 @@ get_source_stats <- function(source_name = character(0),
   query_string <- paste0("EXEC [ResearchMeta].[Explorer].[GetSourceStats] @SourceName = '", 
                         source_name, "', @TestMode = ", testmode, ";")
 
-  dat <- bibloadr_query(query_string, devmode)
+  dat <- bibloadr_query(query_string, devmode, as.is = T)
   
   # return data frame
   return(dat)
