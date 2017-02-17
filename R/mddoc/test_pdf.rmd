@@ -1,9 +1,15 @@
 ---
-title: "BiB Data Dictionary"
+title: "Born in Bradford Data Dictionary"
+subtitle: "(Study reference number or Data Package Name here)"
+header-includes:
+- \usepackage{lmodern}
+- \renewcommand*\familydefault{\sfdefault}
+- \usepackage[T1]{fontenc}
+- \usepackage{fancyhdr}
+- \pagestyle{fancy}
+- \fancyfoot[RO,RE]{Database:BUILD20170217}
 output:
   pdf_document:
-    includes:
-      in_header: data_dict_style.sty
     toc: yes
   html_document: default
 ---
@@ -23,6 +29,9 @@ sourcemeta <- get_bibloadr_meta(varfile = varfile, type = "sourcelong")
 codebook <- get_bibloadr_meta(varfile = varfile, type = "code")
 stats <- get_bibloadr_stats(varfile = varfile)
 meta <- merge(meta, stats, by = "VariableName")
+sourcestats <- select(meta, SourceName, NRows, MultiObs, NUnits) %>% 
+               group_by(SourceName) %>% mutate(NUnits = max(NUnits)) %>% unique()
+sourcemeta <- merge(sourcemeta, sourcestats, by = "SourceName")
 ```
 
 ```{r dictionary, echo = FALSE}
@@ -71,11 +80,9 @@ source <- function(src) {
 
   src_block <- "
   
-# {{src$SourceLongName}}
+# {{src$SourceLongName}} [{{src$SourceName}}]
 
-### Measurement level: {{src$MeasurementLevel}}
-
-Source ID: {{src$SourceName}}
+_This source is measured at the {{src$MeasurementLevel}} level and contains n rows._
 
 {{src$Description}}
 
@@ -92,6 +99,8 @@ out <- character(0)
 
 for(s in 1:nrow(sourcemeta)) {
   
+  out <- c(out, "\\newpage")
+
   out <- c(out, source(src = sourcemeta[s, ]))
   
   meta_bysource <- filter(meta, SourceName == sourcemeta$SourceName[s])
@@ -104,7 +113,8 @@ for(s in 1:nrow(sourcemeta)) {
 
     meta_bysection <- filter(meta_bysource, SectionName == sections[se])
     
-    section_table <- select(meta_bysection, Variable = VariableName, `Variable Label` = VariableLabel)
+    section_table <- select(meta_bysection, Variable = VariableName, `Variable Label` = VariableLabel) %>%
+                     mutate(Variable = paste0("**", Variable, "**"), `Variable Label` = paste0(`Variable Label`, "\\\n"))
     
     if(sections[se] != "<GENERAL SECTION>") {
       
@@ -126,11 +136,21 @@ for(s in 1:nrow(sourcemeta)) {
     
     out <- c(out, pander(section_table))
     
-    } 
+    if (se < length(sections)) out <- c(out, "\\newpage")
+    
+  } 
   
 }
 
 
 ```
+
+# Background
+
+Born in Bradford is a longitudinal multi-ethnic birth cohort study aiming to examine the impact of environmental, psychological and genetic factors on maternal and child health and wellbeing. Bradford is a city in the North of England with high levels of socio-economic deprivation and ethnic diversity. Women were recruited at the Bradford Royal Infirmary at 26-28 weeks gestation. For those consenting, a baseline questionnaire was completed. The full BiB cohort recruited 12,450 women comprising 13,773 pregnancies between 2007 and 2010 and the cohort is broadly characteristic of the city’s maternal population. Mean age of the mothers at study recruitment was 27 years old. Researchers are looking at the links between the circumstances of a child’s birth, the context in which they grow up, their health and well-being and their educational progress. Ethical approval for the data collection was granted by Bradford Research Ethics Committee (Ref 07/H1302/112).
+
+## This document
+
+This document is a data dictionary for (Study reference number or Data Package Name here). It describes `r nrow(meta)` variables from `r nrow(sourcemeta)` source`r ifelse(nrow(sourcemeta)>1,"s","")`. It was built using _R_ and Born in Bradford database version BUILD20170217.
 
 `r knit(text = out)`
