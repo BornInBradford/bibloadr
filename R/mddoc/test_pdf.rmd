@@ -36,20 +36,32 @@ coding <- function(v) {
   if(nrow(c) > 0) {
     
     codeblock <- paste0(c$Value, " = ", c$ValueLabel, "\\\n")
-    codeblock <- c("\\\nCoding:\\\n", codeblock, "", "Coding ID: {{c$CodeSetName[1]}}")
+    codeblock <- c(paste0("------------------\\\nCoding [", c$CodeSetName[1], "]:\\\n"), codeblock)
   
   }
   
-  return(knit_expand(text = codeblock))
+  return(codeblock)
   
 }
 
 vardescription <- function(var) {
   
-  var_block <- ifelse(is.na(var$Description), "", "{{var$Description}}\\\n")
-  var_block <- c(var_block, "{{var$MeasureType}}, {{var$ValueType}} value\\\n")
-  var_block <- c(var_block, "INSERT CONDITIONAL STATS HERE")
-  var_block <- c(var_block, coding(v = var$VariableName), "\\\n")
+  value_line = ifelse(var$MeasureType == "Pending", 
+                      "{{var$ValueType}} value\\\n",
+                      "{{var$MeasureType}}: {{var$ValueType}} value\\\n")
+  
+  description_line = ifelse(is.na(var$Description), NA, "------------------\\\n{{var$Description}}\\\n")
+  
+  range_line = ifelse(var$ValueType %in% c("Continuous", "Integer", "Date", "Time"),
+                      "------------------\\\nRange {{var$MinValue}} to {{var$MaxValue}}\\\n", NA)
+  
+  mean_line = ifelse(var$ValueType == "Continuous", "Mean {{var$MeanValue}}\\\n", NA)
+  
+  var_block <- value_line
+  if(!is.na(description_line)) var_block <- c(var_block, description_line)
+  if(!is.na(range_line)) var_block <- c(var_block, range_line)
+  if(!is.na(mean_line)) var_block <- c(var_block, mean_line)
+  var_block <- c(var_block, coding(v = var$VariableName))
   
   return(knit_expand(text = var_block))
 
@@ -110,7 +122,7 @@ for(s in 1:nrow(sourcemeta)) {
     panderOptions("table.alignment.default", "left")
     panderOptions("table.alignment.rownames", "left")
     panderOptions("table.split.table", Inf)
-    panderOptions("table.split.cells", c(30, 20, 85))
+    panderOptions("table.split.cells", c(30, 30, 60))
     
     out <- c(out, pander(section_table))
     
