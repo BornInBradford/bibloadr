@@ -45,7 +45,7 @@ coding <- function(v) {
   if(nrow(c) > 0) {
     
     codeblock <- paste0(c$Value, " = ", c$ValueLabel, "\\\n")
-    codeblock <- c(paste0("------------------\\\nCoding [", c$CodeSetName[1], "]:\\\n"), codeblock)
+    codeblock <- c(paste0("------------------\\\nCoding [`", c$CodeSetName[1], "`]:\\\n"), codeblock)
   
   }
   
@@ -64,12 +64,21 @@ vardescription <- function(var) {
   range_line = ifelse(var$ValueType %in% c("Continuous", "Integer", "Date", "Time"),
                       "------------------\\\nRange {{var$MinValue}} to {{var$MaxValue}}\\\n", NA)
   
-  mean_line = ifelse(var$ValueType == "Continuous", "Mean {{var$MeanValue}}\\\n", NA)
+  mean_line = ifelse(var$ValueType %in% c("Continuous", "Integer"), "Mean {{var$MeanValue}}\\\n", NA)
+  
+  unique_line = ifelse(var$ValueType == "Text", "{{var$UniqueValues}} unique values\\\n", NA)
+  
+  missingness_line = "{{var$NValues}} non-missing values\\\n"
+  
+  multiobs_line = ifelse(var$MultiObs == 1, "{{var$NUnits}} individuals with between {{var$MinObsPerUnit}} and {{var$MaxObsPerUnit}} observations each\\\n", NA)
   
   var_block <- value_line
   if(!is.na(description_line)) var_block <- c(var_block, description_line)
   if(!is.na(range_line)) var_block <- c(var_block, range_line)
   if(!is.na(mean_line)) var_block <- c(var_block, mean_line)
+  if(!is.na(unique_line)) var_block <- c(var_block, unique_line)
+  var_block <- c(var_block, missingness_line)
+  if(!is.na(multiobs_line)) var_block <- c(var_block, multiobs_line)
   var_block <- c(var_block, coding(v = var$VariableName))
   
   return(knit_expand(text = var_block))
@@ -77,12 +86,20 @@ vardescription <- function(var) {
 }
 
 source <- function(src) {
-
+  
+  plural_level <- ifelse(src$MeasurementLevel == 'Mother', 'mothers',
+                         ifelse(src$MeasurementLevel == 'Child', 'children',
+                                ifelse(src$MeasurementLevel == 'Father', 'fathers',
+                                       ifelse(src$MeasurementLevel == 'Pregnancy', 'pregnancies'))))
+  
   src_block <- "
   
-# {{src$SourceLongName}} [{{src$SourceName}}]
+# {{src$SourceLongName}}
 
-_This source is measured at the {{src$MeasurementLevel}} level and contains n rows._
+This source is measured at the **{{tolower(src$MeasurementLevel)}}** level. It contains data from {{src$NUnits}} {{plural_level}} with {{ifelse(src$MultiObs==1,'more than','')}} one observation per {{tolower(src$MeasurementLevel)}}. There are a total of {{src$NRows}} observations. It has database ID 
+`{{src$SourceName}}`
+
+###Description
 
 {{src$Description}}
 
@@ -147,7 +164,7 @@ for(s in 1:nrow(sourcemeta)) {
 
 # Background
 
-Born in Bradford is a longitudinal multi-ethnic birth cohort study aiming to examine the impact of environmental, psychological and genetic factors on maternal and child health and wellbeing. Bradford is a city in the North of England with high levels of socio-economic deprivation and ethnic diversity. Women were recruited at the Bradford Royal Infirmary at 26-28 weeks gestation. For those consenting, a baseline questionnaire was completed. The full BiB cohort recruited 12,450 women comprising 13,773 pregnancies between 2007 and 2010 and the cohort is broadly characteristic of the city’s maternal population. Mean age of the mothers at study recruitment was 27 years old. Researchers are looking at the links between the circumstances of a child’s birth, the context in which they grow up, their health and well-being and their educational progress. Ethical approval for the data collection was granted by Bradford Research Ethics Committee (Ref 07/H1302/112).
+Born in Bradford is a longitudinal multi-ethnic birth cohort study aiming to examine the impact of environmental, psychological and genetic factors on maternal and child health and wellbeing. Bradford is a city in the North of England with high levels of socio-economic deprivation and ethnic diversity. Women were recruited at the Bradford Royal Infirmary at 26-28 weeks gestation. For those consenting, a baseline questionnaire was completed. The full BiB cohort recruited 12,450 women comprising 13,773 pregnancies and 13,858 children between 2007 and 2010. The cohort is broadly characteristic of the city’s maternal population. Mean age of the mothers at study recruitment was 27 years old. Researchers are looking at the links between the circumstances of a child’s birth, the context in which they grow up, their health and well-being and their educational progress. Ethical approval for the data collection was granted by Bradford Research Ethics Committee (Ref 07/H1302/112).
 
 ## This document
 

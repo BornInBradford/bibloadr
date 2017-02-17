@@ -178,3 +178,6 @@ chgchr_fwei
 chgchr_fbmi
 agecm_chgchr
 agecy_chgchr
+pregbpgestage
+pregbpsystolic
+pregbpdiastolic
