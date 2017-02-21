@@ -20,7 +20,7 @@ library(dplyr)
 library(pander)
 
 
-source("C:/repos/bibloadr/R/bibloadr_package/bib_data_request_functions.R")
+source("C:/repos/bibloadr/package/R/bib_data_request_functions.R")
 
 varfile <- "C:/repos/bibloadr/examples/variables.txt"
 
