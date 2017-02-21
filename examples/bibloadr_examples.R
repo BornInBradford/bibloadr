@@ -1,4 +1,4 @@
-source("R/bib_data_request_functions.R")
+source("R/bibloadr_package/bib_data_request_functions.R")
 
 varfile <- "examples/variables.txt"
 
