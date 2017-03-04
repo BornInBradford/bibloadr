@@ -287,7 +287,8 @@ get_source_stats <- function(source_name = character(0),
 }
 
 
-
+# save data frame to dta file
+# assumes version 13 of stata
 save_bibloadr_dta <- function(dat, file = character(0), about = NULL, version = 13) {
   
   require(readstata13)
@@ -297,7 +298,9 @@ save_bibloadr_dta <- function(dat, file = character(0), about = NULL, version = 
 }
 
 
-                  
+# save data dictionary
+# only supports varfile input, pdf output, no test or dev options yet
+# this is due to how the current rmd template is set up
 save_bibloadr_dict <- function(varfile = NULL, output_file = NULL,
                                database_version = NULL, data_package_name = NULL,
                                dict_template = NULL) {
@@ -305,5 +308,50 @@ save_bibloadr_dict <- function(varfile = NULL, output_file = NULL,
   rmarkdown::render(input = dict_template,  
                     output_format = "pdf_document",
                     output_file = output_file)
+  
+}
+
+
+# get database version
+get_bibloadr_db_version <- function(devmode = FALSE) {
+  
+  # something like:
+  #query_string <- "SELECT TOP 1 Version FROM Reference.Version ORDER BY Date DESC;"
+  
+  #v <- bibloadr_query(query_string, devmode = FALSE, as.is = FALSE)
+  
+  #v <- v$Version[1]
+  
+  #temporary workaround as this table doesn't exist
+  v <- "BUILD-JAN2017"
+  
+  return(v)
+  
+}
+
+# make package for single data file
+# the dtaa request needs to succeed
+# so only one multiobs source allowed
+make_data_package <- function(varfile = character(0), varlist = character(0), level = character(0),
+                              allow_null_ids = FALSE, allow_hidden = FALSE, label = TRUE, log = FALSE, testmode = FALSE, 
+                              cohort = "BiB", devmode = FALSE, format = "stata", stata_version = 13,
+                              package_file_stem = character(0), package_name = character(0),
+                              dict_template = "BiB_data_dictionary.rmd") {
+  
+  
+  dat <- get_bibloadr_data(varfile = varfile, varlist = varlist, level = level,
+                           allow_null_ids = allow_null_ids, allow_hidden = allow_hidden, label = label,
+                           log = log, testmode = testmode, cohort = cohort, devmode = devmode)
+  
+  database_version <- get_bibloadr_db_version(devmode = devmode)
+  
+  about <- paste0(package_name, " | ", "Database version ", database_version)
+  
+  if(format == "stata") save_bibloadr_dta(dat = dat, file = paste0(package_file_stem, "_Data.dta"), 
+                                          about = about, version = stata_version)
+  
+  save_bibloadr_dict(varfile = varfile, output_file = paste0(package_file_stem, "_Dict.pdf"),
+                     database_version = database_version, data_package_name = package_name,
+                     dict_template = dict_template)
   
 }
