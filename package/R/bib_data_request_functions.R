@@ -3,7 +3,7 @@
 # returns character containing XML string
 bibloadr_request_xml <- function(namelist = character(0), nametype = "variable",
                              level = character(0), cbtype = character(0), subclist = character(0),
-                             allow_null_ids = F, allow_hidden = F, user = "BiBUser", log = F, testmode = F,
+                             allow_null_ids = FALSE, allow_hidden = FALSE, user = "BiBUser", log = FALSE, testmode = FALSE,
                              cohort = "BiB") {
     
     # end of line for xml building
@@ -69,7 +69,7 @@ read_namefile <- function(namefile) {
 
 # return a connection to the bibloadr database for submitting the data request XML
 # stores it in global var BIBLOADR_db
-open_bibloadr_db <- function(devmode = F) {
+open_bibloadr_db <- function(devmode = FALSE) {
   
   require(RODBC)
   
@@ -95,12 +95,12 @@ close_bibloadr_db <- function() {
 
 # submit sql query to bibloadr database
 # returns dataframe or error string
-bibloadr_query <- function(query_string, devmode = F, as.is = F) {
+bibloadr_query <- function(query_string, devmode = FALSE, as.is = FALSE) {
   
   # do database bit to get data
   db <- open_bibloadr_db(devmode)
   
-  dat <- sqlQuery(db, query_string, stringsAsFactors = F, as.is = as.is)
+  dat <- sqlQuery(db, query_string, stringsAsFactors = FALSE, as.is = as.is)
   
   close_bibloadr_db()
   
@@ -156,8 +156,8 @@ label_data <- function (dat, var_labels, val_labels,
 # takes data request parameters and submits to bibloadr db, returning data frame
 # concatenates variables in varlist character vector to variables in varfile
 get_bibloadr_data <- function(varfile = character(0), varlist = character(0), level = character(0),
-                              allow_null_ids = F, allow_hidden = F, label = T, log = F, testmode = F, 
-                              cohort = "BiB", devmode = F) {
+                              allow_null_ids = FALSE, allow_hidden = FALSE, label = TRUE, log = FALSE, testmode = FALSE, 
+                              cohort = "BiB", devmode = FALSE) {
   
   # concatenate varlist vars to varfile vars
   varlist <- make_namelist(varfile, varlist)
@@ -199,7 +199,7 @@ get_bibloadr_data <- function(varfile = character(0), varlist = character(0), le
 # concatenates variables in varlist character vector to variables in varfile
 # default type is varlong
 get_bibloadr_meta <- function(varfile = character(0), varlist = character(0),
-                              type = "varlong", testmode = F, devmode = F) {
+                              type = "varlong", testmode = FALSE, devmode = FALSE) {
   
   # concatenate varlist vars to varfile vars
   varlist <- make_namelist(varfile, varlist)
@@ -227,7 +227,7 @@ get_bibloadr_meta <- function(varfile = character(0), varlist = character(0),
 # takes variable list, gets sources and requests stats for each
 # then merges them into one dataframe
 get_bibloadr_stats <- function(varfile = character(0), varlist = character(0),
-                               testmode = F, devmode = F) {
+                               testmode = FALSE, devmode = FALSE) {
   
   # concatenate varlist vars to varfile vars
   varlist <- make_namelist(varfile, varlist)
@@ -272,7 +272,7 @@ get_bibloadr_stats <- function(varfile = character(0), varlist = character(0),
 # takes single sourcename parameter and retrieves stats
 # returns dataframe
 get_source_stats <- function(source_name = character(0), 
-                             testmode = F, devmode = F) {
+                             testmode = FALSE, devmode = FALSE) {
   
   testmode = ifelse(testmode, 1, 0)
 
