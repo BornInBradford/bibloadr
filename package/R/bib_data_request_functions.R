@@ -295,3 +295,15 @@ save_bibloadr_dta <- function(dat, file = character(0), about = NULL, version = 
   save.dta13(data = dat, file = file, data.label = about, version = version)
   
 }
+
+
+                  
+save_bibloadr_dict <- function(varfile = NULL, output_file = NULL,
+                               database_version = NULL, data_package_name = NULL,
+                               dict_template = NULL) {
+  
+  rmarkdown::render(input = dict_template,  
+                    output_format = "pdf_document",
+                    output_file = output_file)
+  
+}
