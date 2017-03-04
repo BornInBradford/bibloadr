@@ -286,3 +286,12 @@ get_source_stats <- function(source_name = character(0),
   
 }
 
+
+
+save_bibloadr_dta <- function(dat, file = character(0), about = NULL, version = 13) {
+  
+  require(readstata13)
+  
+  save.dta13(data = dat, file = file, data.label = about, version = version)
+  
+}
