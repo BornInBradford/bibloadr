@@ -1,7 +1,19 @@
-source("R/bibloadr_package/bib_data_request_functions.R")
+#source("R/bibloadr_package/bib_data_request_functions.R")
 
-varfile <- "examples/variables.txt"
+require(bibloadr)
 
-dat <- get_bibloadr_data(varfile = varfile, level = "child", label = T, allow_hidden = T)
-meta <- get_bibloadr_meta(varfile = varfile)
-codebook <- get_bibloadr_meta(varfile = varfile, type = "code")
+varfile_multi <- "examples/variables.txt"
+varfile_single <- "examples/variables_single_extract.txt"
+
+
+dat <- get_bibloadr_data(varfile = varfile_single, level = "child", label = T, allow_hidden = T)
+meta <- get_bibloadr_meta(varfile = varfile_single)
+codebook <- get_bibloadr_meta(varfile = varfile_single, type = "code")
+
+output_dir <- "H:/MyDocuments/R/tmp/"
+
+p <- make_data_package(varfile = varfile_single, level = "child", label = T, allow_hidden = T,
+                       package_file_stem = paste0(output_dir, "test_data_package"), 
+                       package_name = paste0(output_dir, "Test data package for bibloadr development"))
+
+
