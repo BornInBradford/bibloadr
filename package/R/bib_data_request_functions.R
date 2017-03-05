@@ -292,11 +292,10 @@ get_source_stats <- function(source_name = character(0),
 save_bibloadr_dta <- function(dat, file = character(0), about = NULL, version = 13) {
   
   require(readstata13)
-  
-  # find text fileds in dat
-  text_cols <- 
-  # make sure missing values are '' for Text fields and not NA
-  is.na(dat)
+
+  # find text fields in dat and convert NAs to ""
+  convert_text_NAs <- which(attr(dat, "ValueType") == "Text")
+  is.na(dat[convert_text_NAs]) <- ""
   
   save.dta13(data = dat, file = file, data.label = about, version = version)
   
