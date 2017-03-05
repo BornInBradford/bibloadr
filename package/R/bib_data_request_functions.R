@@ -141,9 +141,14 @@ label_columns <- function (dat, var_labels, val_labels,
 
 # converts column x of dat to factor based on labels from val_labels
 # variables should be in the same order in dat and val_labels
-format_factor_column <- function(dat, val_labels, x) {
+format_factor_column <- function(dat, val_labels, col_name) {
   
-  dat[x] <- factor(dat[[x]], levels=val_labels$Value[x], labels=val_labels$ValueLabel[x])
+  data_column <- which(names(dat) == col_name)
+  label_row <- which(val_labels$VariableName == col_name)
+  
+  dat[data_column] <- factor(dat[[data_column]], 
+                             levels=val_labels$Value[label_row], 
+                             labels=val_labels$ValueLabel[label_row])
   
   return(dat)
   
@@ -157,12 +162,14 @@ format_column_types <- function(dat, val_labels) {
     
     value_type <- attr(dat, "ValueType")[x]
     
-    if(value_type == "Integer") dat[x] <- as.integer(dat[[x]])
-    if(value_type == "Continuous") dat[x] <- as.integer(dat[[x]])
-    if(value_type == "Date") dat[x] <- as.Date(dat[[x]])
-    if(value_type == "Text") dat[x] <- as.character(dat[[x]])
-    if(value_type == "Categorical") dat <- format_factor_column(dat, val_labels, x)
-              
+    if(!is.na(value_type)) {
+      if(value_type == "Integer") dat[x] <- as.integer(dat[[x]])
+      if(value_type == "Continuous") dat[x] <- as.numeric(dat[[x]])
+      if(value_type == "Date") dat[x] <- as.Date(dat[[x]])
+      if(value_type == "Text") dat[x] <- as.character(dat[[x]])
+      if(value_type == "Categorical") dat <- format_factor_column(dat, val_labels, names(dat)[x])
+    }
+    
   }
   
   return(dat)
