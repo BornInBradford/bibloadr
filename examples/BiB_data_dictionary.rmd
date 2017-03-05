@@ -1,0 +1,181 @@
+---
+title: "Born in Bradford Data Dictionary"
+subtitle: "`r data_package_name`"
+header-includes:
+- \usepackage{lmodern}
+- \renewcommand*\familydefault{\sfdefault}
+- \usepackage[T1]{fontenc}
+- \usepackage{fancyhdr}
+- \pagestyle{fancy}
+- \fancyfoot[RO,RE]{`r database_version`}
+output:
+  pdf_document:
+    toc: yes
+  html_document: default
+---
+
+```{r setup, include = FALSE}
+library(knitr)
+library(dplyr)
+library(pander)
+library(bibloadr)
+
+meta <- get_bibloadr_meta(varfile = varfile, type = "varsection")
+sourcemeta <- get_bibloadr_meta(varfile = varfile, type = "sourcelong")
+codebook <- get_bibloadr_meta(varfile = varfile, type = "code")
+stats <- get_bibloadr_stats(varfile = varfile)
+meta <- merge(meta, stats, by = "VariableName")
+sourcestats <- select(meta, SourceName, NRows, MultiObs, NUnits) %>% 
+               group_by(SourceName) %>% mutate(NUnits = max(NUnits)) %>% unique()
+sourcemeta <- merge(sourcemeta, sourcestats, by = "SourceName")
+```
+
+```{r dictionary, echo = FALSE}
+
+coding <- function(v) {
+  
+  c <- filter(codebook, VariableName == v & !is.na(CodeSetName))
+  
+  codeblock <- ""
+  
+  if(nrow(c) > 0) {
+    
+    codeblock <- paste0(c$Value, " = ", c$ValueLabel, "\\\n")
+    codeblock <- c(paste0("------------------\\\nCoding [`", c$CodeSetName[1], "`]:\\\n"), codeblock)
+  
+  }
+  
+  return(codeblock)
+  
+}
+
+get_plural_level <- function(level = character(0)) {
+  
+  plural <- ""
+  
+  level <- toupper(level)
+  
+  if(level == "MOTHER") plural <- "mothers"
+  if(level == "CHILD") plural <- "children"
+  if(level == "FATHER") plural <- "fathers"
+  if(level == "PREGNANCY") plural <- "pregnancies"
+
+  return(plural)
+  
+}
+
+vardescription <- function(var, src) {
+  
+  value_line <- ifelse(var$MeasureType == "Pending", 
+                      "{{var$ValueType}} value\\\n",
+                      "{{var$MeasureType}}: {{var$ValueType}} value\\\n")
+  
+  description_line <- ifelse(is.na(var$Description), NA, "------------------\\\n{{var$Description}}\\\n")
+  
+  range_line <- ifelse(var$ValueType %in% c("Continuous", "Integer", "Date", "Time"),
+                      "------------------\\\nRange {{var$MinValue}} to {{var$MaxValue}}\\\n", NA)
+  
+  mean_line <- ifelse(var$ValueType %in% c("Continuous", "Integer"), "Mean {{var$MeanValue}}\\\n", NA)
+  
+  unique_line <- ifelse(var$ValueType == "Text", "{{var$UniqueValues}} unique values\\\n", NA)
+  
+  missingness_line <- "{{var$NValues}} non-missing values\\\n"
+  
+  multiobs_line <- ifelse(var$MultiObs == 1, "{{var$NUnits}} {{get_plural_level(level = src$MeasurementLevel)}} with between {{var$MinObsPerUnit}} and {{var$MaxObsPerUnit}} observations each\\\n", NA)
+  
+  var_block <- value_line
+  if(!is.na(description_line)) var_block <- c(var_block, description_line)
+  if(!is.na(range_line)) var_block <- c(var_block, range_line)
+  if(!is.na(mean_line)) var_block <- c(var_block, mean_line)
+  if(!is.na(unique_line)) var_block <- c(var_block, unique_line)
+  var_block <- c(var_block, missingness_line)
+  if(!is.na(multiobs_line)) var_block <- c(var_block, multiobs_line)
+  var_block <- c(var_block, coding(v = var$VariableName))
+  
+  return(knit_expand(text = var_block))
+
+}
+
+source <- function(src) {
+  
+  plural_level <- get_plural_level(level = src$MeasurementLevel)
+  
+  src_block <- "
+  
+# {{src$SourceLongName}}
+
+This source is measured at the **{{tolower(src$MeasurementLevel)}}** level. It contains data from {{src$NUnits}} {{plural_level}} with {{ifelse(src$MultiObs==1,'more than','')}} one observation per {{tolower(src$MeasurementLevel)}}. There are a total of {{src$NRows}} observations. It has database ID 
+`{{src$SourceName}}`
+
+###Description
+
+{{src$Description}}
+
+"
+  
+  return(knit_expand(text = src_block))
+  
+}
+
+
+
+
+out <- character(0)
+
+for(s in 1:nrow(sourcemeta)) {
+  
+  out <- c(out, "\\newpage")
+
+  out <- c(out, source(src = sourcemeta[s, ]))
+  
+  meta_bysource <- filter(meta, SourceName == sourcemeta$SourceName[s])
+  
+  meta_bysource$SectionName <- ifelse(is.na(meta_bysource$SectionName), "<GENERAL SECTION>", meta_bysource$SectionName)
+  
+  sections <- unique(meta_bysource$SectionName)
+  
+  for(se in 1:length(sections)) {
+
+    meta_bysection <- filter(meta_bysource, SectionName == sections[se])
+    
+    section_table <- select(meta_bysection, Variable = VariableName, `Variable Label` = VariableLabel) %>%
+                     mutate(Variable = paste0("**", Variable, "**"), `Variable Label` = paste0(`Variable Label`, "\\\n"))
+    
+    if(sections[se] != "<GENERAL SECTION>") {
+      
+      out <- c(out, knit_expand(text = "## {{sections[se]}}"))
+    
+    }
+    
+    for(v in 1:nrow(meta_bysection)) {
+      
+      section_table$Details[v] <- vardescription(var = meta_bysection[v, ], src = sourcemeta[s, ])
+
+    }
+    
+    panderOptions("keep.line.breaks", TRUE)
+    panderOptions("table.alignment.default", "left")
+    panderOptions("table.alignment.rownames", "left")
+    panderOptions("table.split.table", Inf)
+    panderOptions("table.split.cells", c(30, 30, 60))
+    
+    out <- c(out, pander(section_table))
+    
+    if (se < length(sections)) out <- c(out, "\\newpage")
+    
+  } 
+  
+}
+
+
+```
+
+# Background
+
+Born in Bradford is a longitudinal multi-ethnic birth cohort study aiming to examine the impact of environmental, psychological and genetic factors on maternal and child health and wellbeing. Bradford is a city in the North of England with high levels of socio-economic deprivation and ethnic diversity. Women were recruited at the Bradford Royal Infirmary at 26-28 weeks gestation. For those consenting, a baseline questionnaire was completed. The full BiB cohort recruited 12,450 women comprising 13,773 pregnancies and 13,858 children between 2007 and 2010. The cohort is broadly characteristic of the city's maternal population. Mean age of the mothers at study recruitment was 27 years old. Researchers are looking at the links between the circumstances of a child's birth, the context in which they grow up, their health and well-being and their educational progress. Ethical approval for the data collection was granted by Bradford Research Ethics Committee (Ref 07/H1302/112).
+
+## This document
+
+This document is a data dictionary for `r data_package_name`. It describes `r nrow(meta)` variables from `r nrow(sourcemeta)` source`r ifelse(nrow(sourcemeta)>1,"s","")`. It was built using _R_ and Born in Bradford database version `r database_version`.
+
+`r knit(text = out)`

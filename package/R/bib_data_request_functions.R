@@ -320,7 +320,7 @@ save_bibloadr_dta <- function(dat, file = character(0), about = NULL, version = 
 
   # find text fields in dat and convert NAs to ""
   convert_text_NAs <- which(attr(dat, "ValueType") == "Text")
-  is.na(dat[convert_text_NAs]) <- ""
+  dat[,convert_text_NAs][is.na(dat[,convert_text_NAs])] <- ""
   
   save.dta13(data = dat, file = file, data.label = about, version = version)
   
@@ -364,6 +364,7 @@ get_bibloadr_db_version <- function(devmode = FALSE) {
 make_data_package <- function(varfile = character(0), varlist = character(0), level = character(0),
                               allow_null_ids = FALSE, allow_hidden = FALSE, log = FALSE, testmode = FALSE, 
                               cohort = "BiB", devmode = FALSE, format = "stata", stata_version = 13,
+                              package_directory = getwd(),
                               package_file_stem = character(0), package_name = character(0),
                               dict_template = "BiB_data_dictionary.rmd") {
   
@@ -374,13 +375,13 @@ make_data_package <- function(varfile = character(0), varlist = character(0), le
   
   database_version <- get_bibloadr_db_version(devmode = devmode)
   
-  about <- paste0(package_name, " | ", "Database version ", database_version)
+  about <- paste0(package_name, " | ", database_version)
   
-  if(format == "stata") save_bibloadr_dta(dat = dat, file = paste0(package_file_stem, "_Data.dta"), 
+  if(format == "stata") save_bibloadr_dta(dat = dat, file = paste0(package_directory, "/", package_file_stem, "_Data.dta"), 
                                           about = about, version = stata_version)
   
-  save_bibloadr_dict(varfile = varfile, output_file = paste0(package_file_stem, "_Dict.pdf"),
+  save_bibloadr_dict(varfile = paste0(package_directory, "/", varfile), output_file = paste0(package_directory, "/", package_file_stem, "_Dict.pdf"),
                      database_version = database_version, data_package_name = package_name,
-                     dict_template = dict_template)
+                     dict_template = paste0(package_directory, "/", dict_template))
   
 }
