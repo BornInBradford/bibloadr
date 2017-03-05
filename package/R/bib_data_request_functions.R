@@ -153,10 +153,18 @@ label_data <- function (dat, var_labels, val_labels,
   
 }
 
+# takes data frame annotated with attributes describing intended value types
+# and does some reformatting
+format_column_types <- function(dat) {
+  
+  return(dat)
+  
+}
+
 # takes data request parameters and submits to bibloadr db, returning data frame
 # concatenates variables in varlist character vector to variables in varfile
 get_bibloadr_data <- function(varfile = character(0), varlist = character(0), level = character(0),
-                              allow_null_ids = FALSE, allow_hidden = FALSE, label = TRUE, log = FALSE, testmode = FALSE, 
+                              allow_null_ids = FALSE, allow_hidden = FALSE, log = FALSE, testmode = FALSE, 
                               cohort = "BiB", devmode = FALSE) {
   
   # concatenate varlist vars to varfile vars
@@ -179,14 +187,16 @@ get_bibloadr_data <- function(varfile = character(0), varlist = character(0), le
   
   dat <- bibloadr_query(query_string, devmode)
   
-  # if we need to label variables, do that now
-  # only if bibloadr_query did not return error string
-  if (label && typeof(dat) != "character") {
+  # label and format variables bibloadr_query did not return error string
+  if (typeof(dat) != "character") {
     var_labels <- get_bibloadr_meta (varfile = varfile, varlist = varlist, type = "varlong",
                                      testmode = testmode, devmode = devmode)
     val_labels <- get_bibloadr_meta (varfile = varfile, varlist = varlist, type = "code",
                                      testmode = testmode, devmode = devmode)
     dat <- label_data (dat, var_labels, val_labels)
+    
+    dat <- format_column_types(dat)
+    
   }
   
   # return data frame
@@ -337,14 +347,14 @@ get_bibloadr_db_version <- function(devmode = FALSE) {
 # the dtaa request needs to succeed
 # so only one multiobs source allowed
 make_data_package <- function(varfile = character(0), varlist = character(0), level = character(0),
-                              allow_null_ids = FALSE, allow_hidden = FALSE, label = TRUE, log = FALSE, testmode = FALSE, 
+                              allow_null_ids = FALSE, allow_hidden = FALSE, log = FALSE, testmode = FALSE, 
                               cohort = "BiB", devmode = FALSE, format = "stata", stata_version = 13,
                               package_file_stem = character(0), package_name = character(0),
                               dict_template = "BiB_data_dictionary.rmd") {
   
   
   dat <- get_bibloadr_data(varfile = varfile, varlist = varlist, level = level,
-                           allow_null_ids = allow_null_ids, allow_hidden = allow_hidden, label = label,
+                           allow_null_ids = allow_null_ids, allow_hidden = allow_hidden,
                            log = log, testmode = testmode, cohort = cohort, devmode = devmode)
   
   database_version <- get_bibloadr_db_version(devmode = devmode)
