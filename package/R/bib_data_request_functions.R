@@ -293,6 +293,11 @@ save_bibloadr_dta <- function(dat, file = character(0), about = NULL, version = 
   
   require(readstata13)
   
+  # find text fileds in dat
+  text_cols <- 
+  # make sure missing values are '' for Text fields and not NA
+  is.na(dat)
+  
   save.dta13(data = dat, file = file, data.label = about, version = version)
   
 }
