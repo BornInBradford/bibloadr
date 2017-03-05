@@ -119,9 +119,9 @@ make_namelist <- function(namefile = character(0), namelist = character(0)) {
 
 }
 
-# label a dataframe using meta-data provided in var_labels and val_labels
-label_data <- function (dat, var_labels, val_labels, 
-                        ignore = c("ChildID", "PregnancyID", "MotherID")) {
+# label a dataframe's columns using meta-data provided in var_labels and val_labels
+label_columns <- function (dat, var_labels, val_labels, 
+                           ignore = c("ChildID", "PregnancyID", "MotherID")) {
   
   # how many columns to ignore - these must be at the left hand side
   n_ignore <- sum(names(dat) %in% ignore)
@@ -134,20 +134,16 @@ label_data <- function (dat, var_labels, val_labels,
   attr(dat, "CodeSetName") <- c(skip, var_labels$CodeSetName)
   attr(dat, "MeasureType") <- c(skip, var_labels$MeasureType)
   attr(dat, "SourceName") <- c(skip, var_labels$SourceName)
+  
+  return(dat)
+  
+}
 
-  # find variables that need value labels
-  to_factors <- names(dat)[attr(dat, "ValueType") == "Categorical"]
-  to_factors <- to_factors[!is.na(to_factors)]
-  # add value labels
-  for(x in 1:length(to_factors)) {
-    # column number of the variable to be labelled
-    data_col <- which(names(dat) == to_factors[x])
-    # rows in the codebook to use for labels
-    label_row <- which(val_labels$VariableName == to_factors[x])
-    # do labelling
-    dat[data_col] <- factor(dat[[data_col]], levels=val_labels$Value[label_row],
-                            labels=val_labels$ValueLabel[label_row])
-    }
+# converts column x of dat to factor based on labels from val_labels
+# variables should be in the same order in dat and val_labels
+format_factor_column <- function(dat, val_labels, x) {
+  
+  dat[x] <- factor(dat[[x]], levels=val_labels$Value[x], labels=val_labels$ValueLabel[x])
   
   return(dat)
   
@@ -155,7 +151,19 @@ label_data <- function (dat, var_labels, val_labels,
 
 # takes data frame annotated with attributes describing intended value types
 # and does some reformatting
-format_column_types <- function(dat) {
+format_column_types <- function(dat, val_labels) {
+  
+  for(x in 1:length(dat)) {
+    
+    value_type <- attr(dat, "ValueType")[x]
+    
+    if(value_type == "Integer") dat[x] <- as.integer(dat[[x]])
+    if(value_type == "Continuous") dat[x] <- as.integer(dat[[x]])
+    if(value_type == "Date") dat[x] <- as.Date(dat[[x]])
+    if(value_type == "Text") dat[x] <- as.character(dat[[x]])
+    if(value_type == "Categorical") dat <- format_factor_column(dat, val_labels, x)
+              
+  }
   
   return(dat)
   
@@ -193,9 +201,9 @@ get_bibloadr_data <- function(varfile = character(0), varlist = character(0), le
                                      testmode = testmode, devmode = devmode)
     val_labels <- get_bibloadr_meta (varfile = varfile, varlist = varlist, type = "code",
                                      testmode = testmode, devmode = devmode)
-    dat <- label_data (dat, var_labels, val_labels)
+    dat <- label_columns (dat, var_labels, val_labels)
     
-    dat <- format_column_types(dat)
+    dat <- format_column_types(dat, val_labels)
     
   }
   
