@@ -330,7 +330,7 @@ save_bibloadr_dta <- function(dat, file = character(0), about = NULL, version = 
 # save data dictionary
 # only supports varfile input, pdf output, no test or dev options yet
 # this is due to how the current rmd template is set up
-save_bibloadr_dict <- function(varfile = NULL, output_file = NULL,
+save_bibloadr_dict <- function(varfile = character(0), varlist = character(0), output_file = NULL,
                                database_version = NULL, data_package_name = NULL,
                                dict_template = NULL) {
   
@@ -381,7 +381,8 @@ make_data_package <- function(varfile = character(0), varlist = character(0), le
   if(format == "stata") save_bibloadr_dta(dat = dat, file = paste0(package_directory, "/", package_file_stem, "_Data.dta"), 
                                           about = about, version = stata_version)
   
-  if(output_dict) save_bibloadr_dict(varfile = paste0(package_directory, "/", varfile), output_file = paste0(package_directory, "/", package_file_stem, "_Dict.pdf"),
+  if(output_dict) save_bibloadr_dict(varfile = paste0(package_directory, "/", varfile), 
+                                     varlist = varlist, output_file = paste0(package_directory, "/", package_file_stem, "_Dict.pdf"),
                      database_version = database_version, data_package_name = package_name,
                      dict_template = paste0(package_directory, "/", dict_template))
   
