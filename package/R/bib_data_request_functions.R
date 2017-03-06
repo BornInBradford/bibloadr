@@ -413,7 +413,7 @@ make_data_package_multi <- function(varfile = character(0), varlist = character(
   # if wide to be combined, only select long sources
   split_sources <- ifelse(combine_wide, source_properties$SourceName[source_properties$MultipleObservations == 1],
                                         source_properties$SourceName)
-  wide_sources <- source_properies$SourceName[source_properties$MultipleObservations == 0]
+  wide_sources <- source_properties$SourceName[source_properties$MultipleObservations == 0]
   
   # output combined wide if requested
   if (combine_wide && nrow(wide_sources) > 0) {
