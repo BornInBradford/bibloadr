@@ -435,18 +435,24 @@ make_data_package_multi <- function(varfile = character(0), varlist = character(
   # output any sources that need to be done separately
   if (nrow(split_sources) > 0) {
     
+    for(x in 1:length(split_sources)) {
+      
+      split_vars <- var_source$VariableName[var_source$SourceName == split_sources[x]]
+      
+      make_data_package(varlist = split_vars, level = level,
+                        allow_null_ids = allow_null_ids, allow_hidden = allow_hidden, 
+                        log = log, testmode = testmode, cohort = cohort, devmode = devmode, 
+                        format = format, stata_version = stata_version,
+                        package_directory = package_directory,
+                        package_file_stem = paste0(package_file_stem, "_", split_sources[x]), 
+                        package_name = paste0(package_name, " (", split_sources[x], ")"),
+                        dict_template = dict_template,
+                        output_dict = multi_dict)
+      
+      
+    }
     
   }
-  
-  # make data package
-  dat <- get_bibloadr_data(varfile = varfile, varlist = varlist, level = level,
-                           allow_null_ids = allow_null_ids, allow_hidden = allow_hidden,
-                           log = log, testmode = testmode, cohort = cohort, devmode = devmode)
-  
-  about <- paste0(package_name, " | ", database_version)
-  
-  if(format == "stata") save_bibloadr_dta(dat = dat, file = paste0(package_directory, "/", package_file_stem, "_Data.dta"), 
-                                          about = about, version = stata_version)
-  
+
   
 }
