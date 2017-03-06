@@ -113,7 +113,7 @@ bibloadr_query <- function(query_string, devmode = FALSE, as.is = FALSE) {
 make_namelist <- function(namefile = character(0), namelist = character(0)) {
   
   # concatenate namelist names to namefile names
-  if(length(namefile) > 0) namelist <- c(read_namefile(namefile),namelist)
+  if(length(namefile) > 0 && file.exists(namefile)) namelist <- c(read_namefile(namefile),namelist)
   
   return(namelist)
 
@@ -416,7 +416,7 @@ make_data_package_multi <- function(varfile = character(0), varlist = character(
   wide_sources <- source_properties$SourceName[source_properties$MultipleObservations == 0]
   
   # output combined wide if requested
-  if (combine_wide && nrow(wide_sources) > 0) {
+  if (combine_wide && length(wide_sources) > 0) {
     
     wide_vars <- var_source$VariableName[var_source$SourceName %in% wide_sources]
     
@@ -433,7 +433,7 @@ make_data_package_multi <- function(varfile = character(0), varlist = character(
   }
   
   # output any sources that need to be done separately
-  if (nrow(split_sources) > 0) {
+  if (length(split_sources) > 0) {
     
     for(x in 1:length(split_sources)) {
       
