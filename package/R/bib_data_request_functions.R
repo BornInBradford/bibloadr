@@ -359,7 +359,7 @@ get_bibloadr_db_version <- function(devmode = FALSE) {
 }
 
 # make package for single data file
-# the dtaa request needs to succeed
+# the data request needs to succeed
 # so only one multiobs source allowed
 make_data_package <- function(varfile = character(0), varlist = character(0), level = character(0),
                               allow_null_ids = FALSE, allow_hidden = FALSE, log = FALSE, testmode = FALSE, 
@@ -385,5 +385,68 @@ make_data_package <- function(varfile = character(0), varlist = character(0), le
                                      varlist = varlist, output_file = paste0(package_directory, "/", package_file_stem, "_Dict.pdf"),
                      database_version = database_version, data_package_name = package_name,
                      dict_template = paste0(package_directory, "/", dict_template))
+  
+}
+
+# make multi-datafile data package
+# multi-obs sources are split up
+make_data_package_multi <- function(varfile = character(0), varlist = character(0), level = character(0),
+                              allow_null_ids = FALSE, allow_hidden = FALSE, log = FALSE, testmode = FALSE, 
+                              cohort = "BiB", devmode = FALSE, format = "stata", stata_version = 13,
+                              package_directory = getwd(),
+                              package_file_stem = character(0), package_name = character(0),
+                              dict_template = "BiB_data_dictionary.rmd",
+                              full_dict = TRUE, multi_dict = FALSE, combine_wide = TRUE) {
+
+  # output full dictionary if requested
+  if(full_dict) save_bibloadr_dict(varfile = paste0(package_directory, "/", varfile), varlist = varlist, 
+                                    output_file = paste0(package_directory, "/", package_file_stem, "_Full_Dict.pdf"),
+                                    database_version = get_bibloadr_db_version(devmode = devmode), 
+                                    data_package_name = package_name,
+                                    dict_template = paste0(package_directory, "/", dict_template))
+  
+  # for working out splits
+  source_properties <- get_bibloadr_meta(varfile = varfile, varlist = varlist, type = "sourceproperties")
+  var_source <- get_bibloadr_meta(varfile = varfile, varlist = varlist, type = "varlong")
+  
+  # vector of sources to split
+  # if wide to be combined, only select long sources
+  split_sources <- ifelse(combine_wide, source_properties$SourceName[source_properties$MultipleObservations == 1],
+                                        source_properties$SourceName)
+  wide_sources <- source_properies$SourceName[source_properties$MultipleObservations == 0]
+  
+  # output combined wide if requested
+  if (combine_wide && nrow(wide_sources) > 0) {
+    
+    wide_vars <- var_source$VariableName[var_source$SourceName %in% wide_sources]
+    
+    make_data_package(varlist = wide_vars, level = level,
+                      allow_null_ids = allow_null_ids, allow_hidden = allow_hidden, 
+                      log = log, testmode = testmode, cohort = cohort, devmode = devmode, 
+                      format = format, stata_version = stata_version,
+                      package_directory = package_directory,
+                      package_file_stem = paste0(package_file_stem, "_Wide"), 
+                      package_name = paste0(package_name, " (Wide)"),
+                      dict_template = dict_template,
+                      output_dict = multi_dict)
+    
+  }
+  
+  # output any sources that need to be done separately
+  if (nrow(split_sources) > 0) {
+    
+    
+  }
+  
+  # make data package
+  dat <- get_bibloadr_data(varfile = varfile, varlist = varlist, level = level,
+                           allow_null_ids = allow_null_ids, allow_hidden = allow_hidden,
+                           log = log, testmode = testmode, cohort = cohort, devmode = devmode)
+  
+  about <- paste0(package_name, " | ", database_version)
+  
+  if(format == "stata") save_bibloadr_dta(dat = dat, file = paste0(package_directory, "/", package_file_stem, "_Data.dta"), 
+                                          about = about, version = stata_version)
+  
   
 }
