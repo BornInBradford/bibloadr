@@ -366,7 +366,8 @@ make_data_package <- function(varfile = character(0), varlist = character(0), le
                               cohort = "BiB", devmode = FALSE, format = "stata", stata_version = 13,
                               package_directory = getwd(),
                               package_file_stem = character(0), package_name = character(0),
-                              dict_template = "BiB_data_dictionary.rmd") {
+                              dict_template = "BiB_data_dictionary.rmd",
+                              output_dict = TRUE) {
   
   
   dat <- get_bibloadr_data(varfile = varfile, varlist = varlist, level = level,
@@ -380,7 +381,7 @@ make_data_package <- function(varfile = character(0), varlist = character(0), le
   if(format == "stata") save_bibloadr_dta(dat = dat, file = paste0(package_directory, "/", package_file_stem, "_Data.dta"), 
                                           about = about, version = stata_version)
   
-  save_bibloadr_dict(varfile = paste0(package_directory, "/", varfile), output_file = paste0(package_directory, "/", package_file_stem, "_Dict.pdf"),
+  if(output_dict) save_bibloadr_dict(varfile = paste0(package_directory, "/", varfile), output_file = paste0(package_directory, "/", package_file_stem, "_Dict.pdf"),
                      database_version = database_version, data_package_name = package_name,
                      dict_template = paste0(package_directory, "/", dict_template))
   
