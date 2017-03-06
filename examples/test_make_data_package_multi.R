@@ -2,7 +2,7 @@
 
 require(bibloadr)
 
-varfile_multi <- "examples/variables.txt"
+varfile_multi <- "examples/b18_variables.txt"
 
 p <- make_data_package_multi(varfile = varfile_multi, level = "child", allow_hidden = FALSE,
                        package_file_stem = "test_multi_data_package", 
