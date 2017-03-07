@@ -179,6 +179,7 @@ format_column_types <- function(dat, val_labels) {
 # takes data request parameters and submits to bibloadr db, returning data frame
 # concatenates variables in varlist character vector to variables in varfile
 get_bibloadr_data <- function(varfile = character(0), varlist = character(0), level = character(0),
+                              subclist = character(0),
                               allow_null_ids = FALSE, allow_hidden = FALSE, log = FALSE, testmode = FALSE, 
                               cohort = "BiB", devmode = FALSE) {
   
@@ -192,7 +193,7 @@ get_bibloadr_data <- function(varfile = character(0), varlist = character(0), le
   sql_start <- "EXEC [ResearchMeta].[Explorer].[GetVariableData]\n@DataRequest = N'"
   
   # needs to find logged in username
-  sql_xml <- bibloadr_request_xml(namelist = varlist, level = level, allow_null_ids = allow_null_ids, 
+  sql_xml <- bibloadr_request_xml(namelist = varlist, level = level, subclist = subclist, allow_null_ids = allow_null_ids, 
                                   allow_hidden = allow_hidden, user = "MasonD", log = log, testmode = testmode,
                                   cohort = cohort)
   
@@ -361,7 +362,7 @@ get_bibloadr_db_version <- function(devmode = FALSE) {
 # make package for single data file
 # the data request needs to succeed
 # so only one multiobs source allowed
-make_data_package <- function(varfile = character(0), varlist = character(0), level = character(0),
+make_data_package <- function(varfile = character(0), varlist = character(0), level = character(0), subclist = character(0),
                               allow_null_ids = FALSE, allow_hidden = FALSE, log = FALSE, testmode = FALSE, 
                               cohort = "BiB", devmode = FALSE, format = "stata", stata_version = 13,
                               package_directory = getwd(),
@@ -370,7 +371,7 @@ make_data_package <- function(varfile = character(0), varlist = character(0), le
                               output_dict = TRUE) {
   
   
-  dat <- get_bibloadr_data(varfile = varfile, varlist = varlist, level = level,
+  dat <- get_bibloadr_data(varfile = varfile, varlist = varlist, level = level, subclist = character(0),
                            allow_null_ids = allow_null_ids, allow_hidden = allow_hidden,
                            log = log, testmode = testmode, cohort = cohort, devmode = devmode)
   
@@ -390,7 +391,8 @@ make_data_package <- function(varfile = character(0), varlist = character(0), le
 
 # make multi-datafile data package
 # multi-obs sources are split up
-make_data_package_multi <- function(varfile = character(0), varlist = character(0), level = character(0),
+make_data_package_multi <- function(varfile = character(0), varlist = character(0), level = character(0), 
+                                    subclist = character(0),
                               allow_null_ids = FALSE, allow_hidden = FALSE, log = FALSE, testmode = FALSE, 
                               cohort = "BiB", devmode = FALSE, format = "stata", stata_version = 13,
                               package_directory = getwd(),
@@ -420,7 +422,7 @@ make_data_package_multi <- function(varfile = character(0), varlist = character(
     
     wide_vars <- var_source$VariableName[var_source$SourceName %in% wide_sources]
     
-    make_data_package(varlist = wide_vars, level = level,
+    make_data_package(varlist = wide_vars, level = level, subclist = subclist,
                       allow_null_ids = allow_null_ids, allow_hidden = allow_hidden, 
                       log = log, testmode = testmode, cohort = cohort, devmode = devmode, 
                       format = format, stata_version = stata_version,
@@ -439,7 +441,7 @@ make_data_package_multi <- function(varfile = character(0), varlist = character(
       
       split_vars <- var_source$VariableName[var_source$SourceName == split_sources[x]]
       
-      make_data_package(varlist = split_vars, level = level,
+      make_data_package(varlist = split_vars, level = level, subclist = subclist,
                         allow_null_ids = allow_null_ids, allow_hidden = allow_hidden, 
                         log = log, testmode = testmode, cohort = cohort, devmode = devmode, 
                         format = format, stata_version = stata_version,
