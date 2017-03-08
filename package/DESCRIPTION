@@ -7,4 +7,6 @@ Maintainer: Dan Mason <dan.mason@bthft.nhs.uk>
 Description: A set of functions for loading BiB data, and outputting data extracts and data dictionaries.
 License: (c) Born in Bradford
 LazyData: TRUE
-Imports: RODBC
+Imports: 
+  RODBC, 
+  readstata13
