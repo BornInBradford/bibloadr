@@ -323,6 +323,12 @@ save_bibloadr_dta <- function(dat, file = character(0), about = NULL, version = 
   convert_text_NAs <- which(attr(dat, "ValueType") == "Text")
   dat[,convert_text_NAs][is.na(dat[,convert_text_NAs])] <- ""
   
+  # add var.labels attribute replacing NAs with ""
+  var.labels <- attr(dat, "VariableLabel")
+  var.labels[is.na(var.labels)] <- ""
+  attr(dat, "var.labels") <- var.labels
+  
+  # save file
   save.dta13(data = dat, file = file, data.label = about, version = version)
   
 }
