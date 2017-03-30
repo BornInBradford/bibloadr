@@ -338,8 +338,10 @@ save_bibloadr_dta <- function(dat, file = character(0), about = NULL, version = 
 # only supports varfile input, pdf output, no test or dev options yet
 # this is due to how the current rmd template is set up
 save_bibloadr_dict <- function(varfile = character(0), varlist = character(0), output_file = NULL,
-                               database_version = NULL, data_package_name = NULL,
-                               dict_template = NULL) {
+                               data_package_name = NULL, dict_template = NULL) {
+  
+  # NB devmode not implemented for data dictionary - would need to be implemented in Rmd template
+  database_version <- get_bibloadr_db_version()
   
   rmarkdown::render(input = dict_template,  
                     output_format = "pdf_document",
@@ -375,8 +377,6 @@ make_data_package <- function(varfile = character(0), varlist = character(0), le
                            allow_null_ids = allow_null_ids, allow_hidden = allow_hidden,
                            log = log, testmode = testmode, cohort = cohort, devmode = devmode)
   
-  database_version <- get_bibloadr_db_version(devmode = devmode)
-  
   about <- paste0(package_name, " | ", database_version)
   
   if(format == "stata") save_bibloadr_dta(dat = dat, file = paste0(package_directory, "/", package_file_stem, "_Data.dta"), 
@@ -384,7 +384,7 @@ make_data_package <- function(varfile = character(0), varlist = character(0), le
   
   if(output_dict) save_bibloadr_dict(varfile = paste0(package_directory, "/", varfile), 
                                      varlist = varlist, output_file = paste0(package_directory, "/", package_file_stem, "_Dict.pdf"),
-                     database_version = database_version, data_package_name = package_name,
+                     data_package_name = package_name,
                      dict_template = paste0(package_directory, "/", dict_template))
   
 }
@@ -403,7 +403,6 @@ make_data_package_multi <- function(varfile = character(0), varlist = character(
   # output full dictionary if requested
   if(full_dict) save_bibloadr_dict(varfile = paste0(package_directory, "/", varfile), varlist = varlist, 
                                     output_file = paste0(package_directory, "/", package_file_stem, "_Full_Dict.pdf"),
-                                    database_version = get_bibloadr_db_version(devmode = devmode), 
                                     data_package_name = package_name,
                                     dict_template = paste0(package_directory, "/", dict_template))
   
