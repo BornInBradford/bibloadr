@@ -11,11 +11,11 @@ bibloadr_request_xml <- function(namelist = character(0), nametype = "variable",
     
     # required xml element tags
     el_DR <- c("<DataRequest>","</DataRequest>")
-    if(nametype == "source") {
+    if(nametype == "Source") {
         el_Nlist <- c("<Sources>","</Sources>")
         el_Nitem <- c("<Source>","</Source>")
         el_Nattr <- c("<SourceName>","</SourceName>")
-    } else if(nametype == "variable") {
+    } else if(nametype == "Variable") {
         el_Nlist <- c("<Variables>","</Variables>")
         el_Nitem <- c("<Variable>","</Variable>")
         el_Nattr <- c("<VariableName>","</VariableName>")
@@ -185,7 +185,7 @@ get_bibloadr_data <- function(varfile = character(0), varlist = character(0), sr
   
   # concatenate varlist vars to varfile vars
   namelist <- make_namelist(varfile, varlist)
-  nametype <- "variable"
+  nametype <- "Variable"
   
   # have we got variables? if not, check srclist
   # if this is empty, exit
@@ -194,12 +194,12 @@ get_bibloadr_data <- function(varfile = character(0), varlist = character(0), sr
       stop("No variables found in request.")
     } else {
       namelist <- srclist
-      nametype <- "source"
+      nametype <- "Source"
     }
   }
   
   # SQL string building
-  sql_start <- "EXEC [ResearchMeta].[Explorer].[GetVariableData]\n@DataRequest = N'"
+  sql_start <- paste0("EXEC [ResearchMeta].[Explorer].[Get", nametype, "Data]\n@DataRequest = N'")
   
   # needs to find logged in username
   sql_xml <- bibloadr_request_xml(namelist = namelist, nametype = nametype, level = level, subclist = subcohort, 
@@ -254,7 +254,7 @@ get_bibloadr_meta <- function(varfile = character(0), varlist = character(0), sr
   # SQL string building
   sql_start <- paste0("EXEC [ResearchMeta].[Explorer].[Get", nametype, "Meta]\n@DataRequest = N'")
   
-  sql_xml <- bibloadr_request_xml(namelist = namelist, nametype = tolower(nametype), cbtype = type, testmode = testmode)
+  sql_xml <- bibloadr_request_xml(namelist = namelist, nametype = nametype, cbtype = type, testmode = testmode)
   
   sql_end <- "';\n"
   

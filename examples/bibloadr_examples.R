@@ -15,3 +15,11 @@ p <- make_data_package(varfile = varfile_single, level = "Pregnancy", allow_hidd
                        dict_template = "examples/BiB_data_dictionary.rmd")
 
 
+srclist <- c("mbqall", "adminc", "mbagtt")
+
+
+dat <- get_bibloadr_data(srclist = srclist, level = "child", allow_hidden = T)
+meta <- get_bibloadr_meta(srclist = srclist)
+codebook <- get_bibloadr_meta(srclist = srclist, type = "code")
+
+
