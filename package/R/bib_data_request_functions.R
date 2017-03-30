@@ -178,24 +178,33 @@ format_column_types <- function(dat, val_labels) {
 
 # takes data request parameters and submits to bibloadr db, returning data frame
 # concatenates variables in varlist character vector to variables in varfile
-get_bibloadr_data <- function(varfile = character(0), varlist = character(0), level = character(0),
-                              subcohort = character(0),
+get_bibloadr_data <- function(varfile = character(0), varlist = character(0), srclist = character(0), 
+                              level = character(0), subcohort = character(0),
                               allow_null_ids = FALSE, allow_hidden = FALSE, log = FALSE, testmode = FALSE, 
                               cohort = "BiB", devmode = FALSE) {
   
   # concatenate varlist vars to varfile vars
-  varlist <- make_namelist(varfile, varlist)
+  namelist <- make_namelist(varfile, varlist)
+  nametype <- "variable"
   
-  # if we still don't have any, exit with error
-  if(length(varlist) == 0) stop("No variables found in request.")
+  # have we got variables? if not, check srclist
+  # if this is empty, exit
+  if(length(namelist) == 0) {
+    if(length(srclist) == 0) {
+      stop("No variables found in request.")
+    } else {
+      namelist <- srclist
+      nametype <- "source"
+    }
+  }
   
   # SQL string building
   sql_start <- "EXEC [ResearchMeta].[Explorer].[GetVariableData]\n@DataRequest = N'"
   
   # needs to find logged in username
-  sql_xml <- bibloadr_request_xml(namelist = varlist, level = level, subclist = subcohort, allow_null_ids = allow_null_ids, 
-                                  allow_hidden = allow_hidden, user = Sys.info()[["login"]], log = log, testmode = testmode,
-                                  cohort = cohort)
+  sql_xml <- bibloadr_request_xml(namelist = namelist, nametype = nametype, level = level, subclist = subcohort, 
+                                  allow_null_ids = allow_null_ids, allow_hidden = allow_hidden, user = Sys.info()[["login"]], 
+                                  log = log, testmode = testmode, cohort = cohort)
   
   sql_end <- "';\n"
   
@@ -205,9 +214,9 @@ get_bibloadr_data <- function(varfile = character(0), varlist = character(0), le
   
   # label and format variables bibloadr_query did not return error string
   if (typeof(dat) != "character") {
-    var_labels <- get_bibloadr_meta (varfile = varfile, varlist = varlist, type = "varlong",
+    var_labels <- get_bibloadr_meta (varfile = varfile, varlist = varlist, srclist = srclist, type = "varlong",
                                      testmode = testmode, devmode = devmode)
-    val_labels <- get_bibloadr_meta (varfile = varfile, varlist = varlist, type = "code",
+    val_labels <- get_bibloadr_meta (varfile = varfile, varlist = varlist, srclist = srclist, type = "code",
                                      testmode = testmode, devmode = devmode)
     dat <- label_columns (dat, var_labels, val_labels)
     
@@ -224,19 +233,28 @@ get_bibloadr_data <- function(varfile = character(0), varlist = character(0), le
 # takes metadata request parameters and submits to bibloadr db, returning data frame
 # concatenates variables in varlist character vector to variables in varfile
 # default type is varlong
-get_bibloadr_meta <- function(varfile = character(0), varlist = character(0),
+get_bibloadr_meta <- function(varfile = character(0), varlist = character(0), srclist = character(0),
                               type = "varlong", testmode = FALSE, devmode = FALSE) {
   
   # concatenate varlist vars to varfile vars
-  varlist <- make_namelist(varfile, varlist)
+  namelist <- make_namelist(varfile, varlist)
+  nametype <- "Variable"
   
-  # if we still don't have any, exit with error
-  if(length(varlist) == 0) stop("No variables found in request.")
+  # have we got variables? if not, check srclist
+  # if this is empty, exit
+  if(length(namelist) == 0) {
+    if(length(srclist) == 0) {
+      stop("No variables found in request.")
+    } else {
+      namelist <- srclist
+      nametype <- "Source"
+    }
+  }
   
   # SQL string building
-  sql_start <- "EXEC [ResearchMeta].[Explorer].[GetVariableMeta]\n@DataRequest = N'"
+  sql_start <- paste0("EXEC [ResearchMeta].[Explorer].[Get", nametype, "Meta]\n@DataRequest = N'")
   
-  sql_xml <- bibloadr_request_xml(namelist = varlist, cbtype = type, testmode = testmode)
+  sql_xml <- bibloadr_request_xml(namelist = namelist, nametype = tolower(nametype), cbtype = type, testmode = testmode)
   
   sql_end <- "';\n"
   
@@ -252,21 +270,15 @@ get_bibloadr_meta <- function(varfile = character(0), varlist = character(0),
 
 # takes variable list, gets sources and requests stats for each
 # then merges them into one dataframe
-get_bibloadr_stats <- function(varfile = character(0), varlist = character(0),
+get_bibloadr_stats <- function(varfile = character(0), varlist = character(0), srclist = character(0),
                                testmode = FALSE, devmode = FALSE) {
   
-  # concatenate varlist vars to varfile vars
-  varlist <- make_namelist(varfile, varlist)
-  
-  # if we still don't have any, exit with error
-  if(length(varlist) == 0) stop("No variables found in request.")
-  
   # get sources
-  src <- get_bibloadr_meta(varfile = varfile, varlist = varlist, type = "source",
+  src <- get_bibloadr_meta(varfile = varfile, varlist = varlist, srclist = srclist, type = "source",
                             testmode = testmode, devmode = devmode)
   
   # get variables
-  var <- get_bibloadr_meta(varfile = varfile, varlist = varlist, type = "var",
+  var <- get_bibloadr_meta(varfile = varfile, varlist = varlist, srclist = srclist, type = "var",
                            testmode = testmode, devmode = devmode)
   
   var <- var[1]
@@ -337,7 +349,7 @@ save_bibloadr_dta <- function(dat, file = character(0), about = NULL, version = 
 # save data dictionary
 # only supports varfile input, pdf output, no test or dev options yet
 # this is due to how the current rmd template is set up
-save_bibloadr_dict <- function(varfile = character(0), varlist = character(0), output_file = NULL,
+save_bibloadr_dict <- function(varfile = character(0), varlist = character(0), srclist = character(0), output_file = NULL,
                                data_package_name = NULL, dict_template = NULL) {
   
   # NB devmode not implemented for data dictionary - would need to be implemented in Rmd template
@@ -364,8 +376,8 @@ get_bibloadr_db_version <- function(devmode = FALSE) {
 # make package for single data file
 # the data request needs to succeed
 # so only one multiobs source allowed
-make_data_package <- function(varfile = character(0), varlist = character(0), level = character(0), subcohort = character(0),
-                              allow_null_ids = FALSE, allow_hidden = FALSE, log = FALSE, testmode = FALSE, 
+make_data_package <- function(varfile = character(0), varlist = character(0), srclist = character(0), level = character(0), 
+                              subcohort = character(0), allow_null_ids = FALSE, allow_hidden = FALSE, log = FALSE, testmode = FALSE, 
                               cohort = "BiB", devmode = FALSE, format = "stata", stata_version = 13,
                               package_directory = getwd(),
                               package_file_stem = character(0), package_name = character(0),
@@ -373,7 +385,7 @@ make_data_package <- function(varfile = character(0), varlist = character(0), le
                               output_dict = TRUE) {
   
   
-  dat <- get_bibloadr_data(varfile = varfile, varlist = varlist, level = level, subcohort = character(0),
+  dat <- get_bibloadr_data(varfile = varfile, varlist = varlist, srclist = srclist, level = level, subcohort = character(0),
                            allow_null_ids = allow_null_ids, allow_hidden = allow_hidden,
                            log = log, testmode = testmode, cohort = cohort, devmode = devmode)
   
@@ -383,7 +395,7 @@ make_data_package <- function(varfile = character(0), varlist = character(0), le
                                           about = about, version = stata_version)
   
   if(output_dict) save_bibloadr_dict(varfile = paste0(package_directory, "/", varfile), 
-                                     varlist = varlist, output_file = paste0(package_directory, "/", package_file_stem, "_Dict.pdf"),
+                                     varlist = varlist, srclist = srclist, output_file = paste0(package_directory, "/", package_file_stem, "_Dict.pdf"),
                      data_package_name = package_name,
                      dict_template = paste0(package_directory, "/", dict_template))
   
@@ -391,7 +403,7 @@ make_data_package <- function(varfile = character(0), varlist = character(0), le
 
 # make multi-datafile data package
 # multi-obs sources are split up
-make_data_package_multi <- function(varfile = character(0), varlist = character(0), level = character(0), 
+make_data_package_multi <- function(varfile = character(0), varlist = character(0), srclist = srclist, level = character(0), 
                                     subcohort = character(0),
                               allow_null_ids = FALSE, allow_hidden = FALSE, log = FALSE, testmode = FALSE, 
                               cohort = "BiB", devmode = FALSE, format = "stata", stata_version = 13,
@@ -401,14 +413,14 @@ make_data_package_multi <- function(varfile = character(0), varlist = character(
                               full_dict = TRUE, multi_dict = FALSE, combine_wide = TRUE) {
 
   # output full dictionary if requested
-  if(full_dict) save_bibloadr_dict(varfile = paste0(package_directory, "/", varfile), varlist = varlist, 
+  if(full_dict) save_bibloadr_dict(varfile = paste0(package_directory, "/", varfile), varlist = varlist, srclist = srclist, 
                                     output_file = paste0(package_directory, "/", package_file_stem, "_Full_Dict.pdf"),
                                     data_package_name = package_name,
                                     dict_template = paste0(package_directory, "/", dict_template))
   
   # for working out splits
-  source_properties <- get_bibloadr_meta(varfile = varfile, varlist = varlist, type = "sourceproperties")
-  var_source <- get_bibloadr_meta(varfile = varfile, varlist = varlist, type = "varlong")
+  source_properties <- get_bibloadr_meta(varfile = varfile, varlist = varlist, srclist = srclist, type = "sourceproperties")
+  var_source <- get_bibloadr_meta(varfile = varfile, varlist = varlist, srclist = srclist, type = "varlong")
   
   # vector of sources to split
   # if wide to be combined, only select long sources
