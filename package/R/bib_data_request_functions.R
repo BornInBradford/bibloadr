@@ -194,7 +194,7 @@ get_bibloadr_data <- function(varfile = character(0), varlist = character(0), le
   
   # needs to find logged in username
   sql_xml <- bibloadr_request_xml(namelist = varlist, level = level, subclist = subcohort, allow_null_ids = allow_null_ids, 
-                                  allow_hidden = allow_hidden, user = "MasonD", log = log, testmode = testmode,
+                                  allow_hidden = allow_hidden, user = Sys.info()[["login"]], log = log, testmode = testmode,
                                   cohort = cohort)
   
   sql_end <- "';\n"
@@ -351,16 +351,10 @@ save_bibloadr_dict <- function(varfile = character(0), varlist = character(0), o
 # get database version
 get_bibloadr_db_version <- function(devmode = FALSE) {
   
-  # something like:
-  #query_string <- "SELECT TOP 1 Version FROM Reference.Version ORDER BY Date DESC;"
+  v <- bibloadr_query(query_string, devmode = devmode, as.is = FALSE)
   
-  #v <- bibloadr_query(query_string, devmode = FALSE, as.is = FALSE)
-  
-  #v <- v$Version[1]
-  
-  #temporary workaround as this table doesn't exist
-  v <- "BUILD-JAN2017"
-  
+  v <- v[,1]
+
   return(v)
   
 }
@@ -464,3 +458,4 @@ make_data_package_multi <- function(varfile = character(0), varlist = character(
 
   
 }
+
