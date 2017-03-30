@@ -353,7 +353,7 @@ save_bibloadr_dict <- function(varfile = character(0), varlist = character(0), o
 # get database version
 get_bibloadr_db_version <- function(devmode = FALSE) {
   
-  v <- bibloadr_query(query_string = "select [Reference].[GetVersion]();", devmode = devmode, as.is = FALSE)
+  v <- bibloadr_query(query_string = "select [Explorer].[GetVersion]();", devmode = devmode, as.is = FALSE)
   
   v <- v[,1]
 
