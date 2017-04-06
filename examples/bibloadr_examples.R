@@ -23,3 +23,6 @@ meta <- get_bibloadr_meta(srclist = srclist)
 codebook <- get_bibloadr_meta(srclist = srclist, type = "code")
 stats <- get_bibloadr_stats(srclist = srclist)
 
+require(bibloadr)
+coll <- get_collections()
+

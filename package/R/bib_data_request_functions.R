@@ -312,11 +312,27 @@ get_bibloadr_stats <- function(varfile = character(0), varlist = character(0), s
 get_source_stats <- function(source_name = character(0), 
                              testmode = FALSE, devmode = FALSE) {
   
-  testmode = ifelse(testmode, 1, 0)
+  testmode <- ifelse(testmode, 1, 0)
 
   query_string <- paste0("EXEC [ResearchMeta].[Explorer].[GetSourceStats] @SourceName = '", 
                         source_name, "', @TestMode = ", testmode, ";")
 
+  dat <- bibloadr_query(query_string, devmode, as.is = T)
+  
+  # return data frame
+  return(dat)
+  
+}
+
+
+# returns view of source names in collections
+# with collections descriptions
+get_collections <- function(testmode = FALSE, devmode = FALSE) {
+  
+  testmode <- ifelse(testmode, "Test", "ResearchData")
+  
+  query_string <- paste0("SELECT * FROM [ResearchMeta].[", testmode, "].[CollectionCatalogue];")
+  
   dat <- bibloadr_query(query_string, devmode, as.is = T)
   
   # return data frame
