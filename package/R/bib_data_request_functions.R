@@ -419,7 +419,7 @@ make_data_package <- function(varfile = character(0), varlist = character(0), sr
   if(output_dict) save_bibloadr_dict(varfile = paste0(package_directory, "/", varfile), 
                                      varlist = varlist, srclist = srclist, output_file = paste0(package_directory, "/", package_file_stem, "_Dict.pdf"),
                      data_package_name = package_name,
-                     dict_template = paste0(package_directory, "/", dict_template))
+                     dict_template = dict_template)
   
 }
 
