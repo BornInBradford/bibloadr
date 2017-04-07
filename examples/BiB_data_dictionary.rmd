@@ -20,13 +20,14 @@ library(dplyr)
 library(pander)
 library(bibloadr)
 
-meta <- get_bibloadr_meta(varfile = varfile, varlist = varlist, type = "varsection")
-sourcemeta <- get_bibloadr_meta(varfile = varfile, varlist = varlist, type = "sourcelong")
-codebook <- get_bibloadr_meta(varfile = varfile, varlist = varlist, type = "code")
-stats <- get_bibloadr_stats(varfile = varfile, varlist = varlist)
+meta <- get_bibloadr_meta(varfile = varfile, varlist = varlist, srclist = srclist, type = "varsection")
+sourcemeta <- get_bibloadr_meta(varfile = varfile, varlist = varlist, srclist = srclist, type = "sourcelong")
+codebook <- get_bibloadr_meta(varfile = varfile, varlist = varlist, srclist = srclist, type = "code")
+stats <- get_bibloadr_stats(varfile = varfile, varlist = varlist, srclist = srclist)
 meta <- merge(meta, stats, by = "VariableName")
-sourcestats <- select(meta, SourceName, NRows, MultiObs, NUnits) %>% 
-               group_by(SourceName) %>% mutate(NUnits = max(NUnits)) %>% unique()
+sourcestats <- select(meta, SourceName, NRows, MultiObs, NUnits, Hidden) %>% 
+               group_by(SourceName) %>% mutate(NUnits = max(NUnits), NVars = n(), NHidden = sum(Hidden)) %>%
+               select(-Hidden) %>% unique()
 sourcemeta <- merge(sourcemeta, sourcestats, by = "SourceName")
 ```
 
@@ -70,6 +71,8 @@ vardescription <- function(var, src) {
                       "{{var$ValueType}} value\\\n",
                       "{{var$MeasureType}}: {{var$ValueType}} value\\\n")
   
+  if(var$Hidden == 1) value_line <- paste0("_[Hidden]_ ", value_line)
+  
   description_line <- ifelse(is.na(var$Description), NA, "------------------\\\n{{var$Description}}\\\n")
   
   range_line <- ifelse(var$ValueType %in% c("Continuous", "Integer", "Date", "Time"),
@@ -104,8 +107,9 @@ source <- function(src) {
   
 # {{src$SourceLongName}}
 
-This source is measured at the **{{tolower(src$MeasurementLevel)}}** level. It contains data from {{src$NUnits}} {{plural_level}} with {{ifelse(src$MultiObs==1,'more than','')}} one observation per {{tolower(src$MeasurementLevel)}}. There are a total of {{src$NRows}} observations. It has database ID 
-`{{src$SourceName}}`
+Database ID for source: `{{src$SourceName}}`
+
+This source is measured at the **{{tolower(src$MeasurementLevel)}}** level. It contains data from {{src$NUnits}} {{plural_level}} with {{ifelse(src$MultiObs==1,'more than','')}} one observation per {{tolower(src$MeasurementLevel)}}. There are {{src$NVars}} variables with a total of {{src$NRows}} observations. {{ifelse(src$NHidden>0,paste0(src$NHidden,' variable', ifelse(src$NHidden>1,'s are',' is'), ' sensitive or potentially disclosive and will be hidden from standard data packages. ', ifelse(src$NHidden>1,'These are','This is'), ' marked as _Hidden_, below. '),'')}}
 
 ###Description
 
@@ -176,6 +180,6 @@ Born in Bradford is a longitudinal multi-ethnic birth cohort study aiming to exa
 
 ## This document
 
-This document is a data dictionary for `r data_package_name`. It describes `r nrow(meta)` variables from `r nrow(sourcemeta)` source`r ifelse(nrow(sourcemeta)>1,"s","")`. It was built using _R_ and Born in Bradford database version `r database_version`.
+This document is a data dictionary for `r data_package_name`. It describes `r nrow(meta)` variables from `r nrow(sourcemeta)` source`r ifelse(nrow(sourcemeta)>1,"s","")`. It was built from Born in Bradford database version `r database_version`.
 
 `r knit(text = out)`

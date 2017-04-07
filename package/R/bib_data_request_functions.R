@@ -349,7 +349,7 @@ save_bibloadr_dta <- function(dat, file = character(0), about = NULL, version = 
 
   # find text fields in dat and convert NAs to ""
   convert_text_NAs <- which(attr(dat, "ValueType") == "Text")
-  dat[,convert_text_NAs][is.na(dat[,convert_text_NAs])] <- ""
+  if(length(convert_text_NAs > 0)) dat[,convert_text_NAs][is.na(dat[,convert_text_NAs])] <- ""
   
   # add var.labels attribute replacing NAs with ""
   var.labels <- attr(dat, "VariableLabel")
@@ -405,7 +405,7 @@ make_data_package <- function(varfile = character(0), varlist = character(0), sr
                            allow_null_ids = allow_null_ids, allow_hidden = allow_hidden,
                            log = log, testmode = testmode, cohort = cohort, devmode = devmode)
   
-  about <- paste0(package_name, " | ", database_version)
+  about <- paste0(package_name, " | ", get_bibloadr_db_version())
   
   if(format == "stata") save_bibloadr_dta(dat = dat, file = paste0(package_directory, "/", package_file_stem, "_Data.dta"), 
                                           about = about, version = stata_version)
@@ -426,8 +426,19 @@ make_data_package_multi <- function(varfile = character(0), varlist = character(
                               package_directory = getwd(),
                               package_file_stem = character(0), package_name = character(0),
                               dict_template = "BiB_data_dictionary.rmd",
-                              full_dict = TRUE, multi_dict = FALSE, combine_wide = TRUE) {
-
+                              full_dict = TRUE, multi_dict = FALSE, combine_wide = TRUE,
+                              preserve_levels = FALSE) {
+  
+  # validate parameters
+  if(preserve_levels == FALSE && level == character(0)) stop("level is required when preserve_levels is FALSE")
+  if(preserve_levels == TRUE && combine_wide == TRUE) {
+    if(level == character(0)) {
+      stop("preserve_levels is ignored for combined wide and level is required")
+    } else {
+      warning("preserve_levels is on so level is only used for combined wide sources")
+    }
+  }
+  
   # output full dictionary if requested
   if(full_dict) save_bibloadr_dict(varfile = paste0(package_directory, "/", varfile), varlist = varlist, srclist = srclist, 
                                     output_file = paste0(package_directory, "/", package_file_stem, "_Full_Dict.pdf"),
@@ -467,6 +478,8 @@ make_data_package_multi <- function(varfile = character(0), varlist = character(
     for(x in 1:length(split_sources)) {
       
       split_vars <- var_source$VariableName[var_source$SourceName == split_sources[x]]
+      
+      if(preserve_levels) level <- source_properties$MeasurementLevel[source_properties$SourceName == split_sources[x]]
       
       make_data_package(varlist = split_vars, level = level, subcohort = subcohort,
                         allow_null_ids = allow_null_ids, allow_hidden = allow_hidden, 
