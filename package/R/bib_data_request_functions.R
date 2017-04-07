@@ -435,6 +435,13 @@ make_data_package_multi <- function(varfile = character(0), varlist = character(
                               full_dict = TRUE, multi_dict = FALSE, combine_wide = TRUE,
                               preserve_levels = FALSE) {
   
+  if(!file.exists(dict_template)) search_dict_template <- paste0(package_directory, "/", dict_template)
+  if(!file.exists(search_dict_template)) {
+    stop(paste0("Dictionary template not found: ", dict_template))
+  } else {
+    dict_template <- search_dict_template
+  }
+  
   # validate parameters
   if(preserve_levels == FALSE && level == character(0)) stop("level is required when preserve_levels is FALSE")
   if(preserve_levels == TRUE && combine_wide == TRUE) {
@@ -449,7 +456,7 @@ make_data_package_multi <- function(varfile = character(0), varlist = character(
   if(full_dict) save_bibloadr_dict(varfile = paste0(package_directory, "/", varfile), varlist = varlist, srclist = srclist, 
                                     output_file = paste0(package_directory, "/", package_file_stem, "_Full_Dict.pdf"),
                                     data_package_name = package_name,
-                                    dict_template = paste0(package_directory, "/", dict_template))
+                                    dict_template = dict_template)
   
   # for working out splits
   source_properties <- get_bibloadr_meta(varfile = varfile, varlist = varlist, srclist = srclist, type = "sourceproperties")
