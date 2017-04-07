@@ -400,6 +400,12 @@ make_data_package <- function(varfile = character(0), varlist = character(0), sr
                               dict_template = "BiB_data_dictionary.rmd",
                               output_dict = TRUE) {
   
+  if(!file.exists(dict_template)) search_dict_template <- paste0(package_directory, "/", dict_template)
+  if(!file.exists(search_dict_template)) {
+    stop(paste0("Dictionary template not found: ", dict_template))
+  } else {
+    dict_template <- search_dict_template
+  }
   
   dat <- get_bibloadr_data(varfile = varfile, varlist = varlist, srclist = srclist, level = level, subcohort = character(0),
                            allow_null_ids = allow_null_ids, allow_hidden = allow_hidden,
