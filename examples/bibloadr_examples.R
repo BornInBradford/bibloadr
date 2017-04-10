@@ -15,7 +15,7 @@ p <- make_data_package(varfile = varfile_single, level = "Pregnancy", allow_hidd
                        dict_template = "examples/BiB_data_dictionary.rmd")
 
 
-srclist <- c("mbqall", "adminc", "mbagtt")
+srclist <- c("adminc", "mbagtt")
 
 
 dat <- get_bibloadr_data(srclist = srclist, level = "child", allow_hidden = F)
@@ -25,6 +25,13 @@ save_bibloadr_dta(dat, "test_Stata_save.dta")
 meta <- get_bibloadr_meta(srclist = srclist)
 codebook <- get_bibloadr_meta(srclist = srclist, type = "code")
 stats <- get_bibloadr_stats(srclist = srclist)
+
+
+dat <- get_bibloadr_data(srclist = srclist, subcohort = c("has_mbqall", "has_eclprg"), level = "child", allow_hidden = F)
+
+meta <- get_bibloadr_meta(srclist = srclist, subcohort = c("has_mbqall", "has_eclprg"))
+
+stats <- get_bibloadr_stats(srclist = srclist, subcohort = c("has_mbqall", "has_eclprg"))
 
 require(bibloadr)
 coll <- get_collections()
