@@ -18,7 +18,7 @@ p <- make_data_package(varfile = varfile_single, level = "Pregnancy", allow_hidd
 srclist <- c("mbqall", "adminc", "mbagtt")
 
 
-dat <- get_bibloadr_data(srclist = srclist, level = "child", allow_hidden = T)
+dat <- get_bibloadr_data(srclist = srclist, level = "child", allow_hidden = F)
 meta <- get_bibloadr_meta(srclist = srclist)
 codebook <- get_bibloadr_meta(srclist = srclist, type = "code")
 stats <- get_bibloadr_stats(srclist = srclist)

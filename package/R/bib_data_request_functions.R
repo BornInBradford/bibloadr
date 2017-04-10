@@ -215,12 +215,12 @@ get_bibloadr_data <- function(varfile = character(0), varlist = character(0), sr
   # label and format variables if bibloadr_query did not return error string
   # drop hidden variables from meta data if allow_hidden == F
   if (typeof(dat) != "character") {
-    var_labels <- get_bibloadr_meta (varfile = varfile, varlist = varlist, srclist = srclist, type = "varlong",
+    var_labels <- get_bibloadr_meta (varfile = varfile, varlist = varlist, srclist = srclist, type = "varsection",
                                      testmode = testmode, devmode = devmode)
     val_labels <- get_bibloadr_meta (varfile = varfile, varlist = varlist, srclist = srclist, type = "code",
                                      testmode = testmode, devmode = devmode)
     
-    if(!allow_hidden) var_labels <- var_labels[var_labels$Hidden == 0]
+    if(!allow_hidden) var_labels <- var_labels[var_labels$Hidden == 0, ]
     
     dat <- label_columns (dat, var_labels, val_labels)
     
