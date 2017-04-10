@@ -464,7 +464,7 @@ make_data_package_multi <- function(varfile = character(0), varlist = character(
   }
   
   # output full dictionary if requested
-  if(full_dict) save_bibloadr_dict(varfile = paste0(package_directory, "/", varfile), varlist = varlist, srclist = srclist, 
+  if(full_dict) save_bibloadr_dict(varfile = paste0(package_directory, "/", varfile), varlist = varlist, subcohort = subcohort, srclist = srclist, 
                                     output_file = paste0(package_directory, "/", package_file_stem, "_Full_Dict.pdf"),
                                     data_package_name = package_name,
                                     dict_template = dict_template)
