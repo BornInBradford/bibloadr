@@ -20,10 +20,10 @@ library(dplyr)
 library(pander)
 library(bibloadr)
 
-meta <- get_bibloadr_meta(varfile = varfile, varlist = varlist, srclist = srclist, type = "varsection")
-sourcemeta <- get_bibloadr_meta(varfile = varfile, varlist = varlist, srclist = srclist, type = "sourcelong")
-codebook <- get_bibloadr_meta(varfile = varfile, varlist = varlist, srclist = srclist, type = "code")
-stats <- get_bibloadr_stats(varfile = varfile, varlist = varlist, srclist = srclist)
+meta <- get_bibloadr_meta(varfile = varfile, varlist = varlist, srclist = srclist, subcohort = subcohort, type = "varsection")
+sourcemeta <- get_bibloadr_meta(varfile = varfile, varlist = varlist, srclist = srclist, subcohort = subcohort, type = "sourcelong")
+codebook <- get_bibloadr_meta(varfile = varfile, varlist = varlist, srclist = srclist, subcohort = subcohort, type = "code")
+stats <- get_bibloadr_stats(varfile = varfile, varlist = varlist, subcohort = subcohort, srclist = srclist)
 meta <- merge(meta, stats, by = "VariableName")
 sourcestats <- select(meta, SourceName, NRows, MultiObs, NUnits, Hidden) %>% 
                group_by(SourceName) %>% mutate(NUnits = max(NUnits), NVars = n(), NHidden = sum(Hidden)) %>%
