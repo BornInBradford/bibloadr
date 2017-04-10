@@ -222,7 +222,7 @@ get_bibloadr_data <- function(varfile = character(0), varlist = character(0), sr
     
     if(!allow_hidden) var_labels <- var_labels[var_labels$Hidden == 0, ]
     
-    dat <- label_columns (dat, var_labels, val_labels)
+    dat <- label_columns (dat, var_labels)
     
     dat <- format_column_types(dat, val_labels)
     
