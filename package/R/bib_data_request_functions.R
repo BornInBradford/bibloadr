@@ -470,8 +470,8 @@ make_data_package_multi <- function(varfile = character(0), varlist = character(
                                     dict_template = dict_template)
   
   # for working out splits
-  source_properties <- get_bibloadr_meta(varfile = varfile, varlist = varlist, srclist = srclist, type = "sourceproperties")
-  var_source <- get_bibloadr_meta(varfile = varfile, varlist = varlist, srclist = srclist, type = "varlong")
+  source_properties <- get_bibloadr_meta(varfile = varfile, varlist = varlist, srclist = srclist, subcohort = subcohort, type = "sourceproperties")
+  var_source <- get_bibloadr_meta(varfile = varfile, varlist = varlist, srclist = srclist, subcohort = subcohort, type = "varlong")
   
   # vector of sources to split
   # if wide to be combined, only select long sources
