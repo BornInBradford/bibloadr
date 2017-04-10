@@ -276,14 +276,15 @@ get_bibloadr_meta <- function(varfile = character(0), varlist = character(0), su
 # takes variable list, gets sources and requests stats for each
 # then merges them into one dataframe
 get_bibloadr_stats <- function(varfile = character(0), varlist = character(0), srclist = character(0),
+                               subcohort = character(0),
                                testmode = FALSE, devmode = FALSE) {
   
   # get sources
-  src <- get_bibloadr_meta(varfile = varfile, varlist = varlist, srclist = srclist, type = "source",
+  src <- get_bibloadr_meta(varfile = varfile, varlist = varlist, srclist = srclist, subcohort = subcohort, type = "source",
                             testmode = testmode, devmode = devmode)
   
   # get variables
-  var <- get_bibloadr_meta(varfile = varfile, varlist = varlist, srclist = srclist, type = "var",
+  var <- get_bibloadr_meta(varfile = varfile, varlist = varlist, srclist = srclist, subcohort = subcohort, type = "var",
                            testmode = testmode, devmode = devmode)
   
   var <- var[1]
