@@ -119,8 +119,8 @@ make_namelist <- function(namefile = character(0), namelist = character(0)) {
 
 }
 
-# label a dataframe's columns using meta-data provided in var_labels and val_labels
-label_columns <- function (dat, var_labels, val_labels, 
+# label a dataframe's columns using meta-data provided in var_labels
+label_columns <- function (dat, var_labels, 
                            ignore = c("ChildID", "PregnancyID", "MotherID")) {
   
   # how many columns to ignore - these must be at the left hand side
@@ -212,12 +212,16 @@ get_bibloadr_data <- function(varfile = character(0), varlist = character(0), sr
   
   dat <- bibloadr_query(query_string, devmode)
   
-  # label and format variables bibloadr_query did not return error string
+  # label and format variables if bibloadr_query did not return error string
+  # drop hidden variables from meta data if allow_hidden == F
   if (typeof(dat) != "character") {
     var_labels <- get_bibloadr_meta (varfile = varfile, varlist = varlist, srclist = srclist, type = "varlong",
                                      testmode = testmode, devmode = devmode)
     val_labels <- get_bibloadr_meta (varfile = varfile, varlist = varlist, srclist = srclist, type = "code",
                                      testmode = testmode, devmode = devmode)
+    
+    if(!allow_hidden) var_labels <- var_labels[var_labels$Hidden == 0]
+    
     dat <- label_columns (dat, var_labels, val_labels)
     
     dat <- format_column_types(dat, val_labels)
