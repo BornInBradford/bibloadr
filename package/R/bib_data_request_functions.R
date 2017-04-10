@@ -369,11 +369,14 @@ save_bibloadr_dta <- function(dat, file = character(0), about = NULL, version = 
 # save data dictionary
 # only supports varfile input, pdf output, no test or dev options yet
 # this is due to how the current rmd template is set up
-save_bibloadr_dict <- function(varfile = character(0), varlist = character(0), srclist = character(0), output_file = NULL,
-                               data_package_name = NULL, dict_template = NULL) {
+save_bibloadr_dict <- function(varfile = character(0), varlist = character(0), srclist = character(0), subcohort = character(0), 
+                               output_file = NULL, data_package_name = NULL, dict_template = NULL) {
   
   # NB devmode not implemented for data dictionary - would need to be implemented in Rmd template
   database_version <- get_bibloadr_db_version()
+  
+  # concatenate subcohort list and varlist so we get has_ variables in data dictionary
+  varlist <- c(varlist, subcohort)
   
   rmarkdown::render(input = dict_template,  
                     output_format = "pdf_document",
@@ -413,7 +416,7 @@ make_data_package <- function(varfile = character(0), varlist = character(0), sr
     }
   }
   
-  dat <- get_bibloadr_data(varfile = varfile, varlist = varlist, srclist = srclist, level = level, subcohort = character(0),
+  dat <- get_bibloadr_data(varfile = varfile, varlist = varlist, srclist = srclist, level = level, subcohort = subcohort,
                            allow_null_ids = allow_null_ids, allow_hidden = allow_hidden,
                            log = log, testmode = testmode, cohort = cohort, devmode = devmode)
   
@@ -423,7 +426,8 @@ make_data_package <- function(varfile = character(0), varlist = character(0), sr
                                           about = about, version = stata_version)
   
   if(output_dict) save_bibloadr_dict(varfile = paste0(package_directory, "/", varfile), 
-                                     varlist = varlist, srclist = srclist, output_file = paste0(package_directory, "/", package_file_stem, "_Dict.pdf"),
+                                     varlist = varlist, subcohort = subcohort, 
+                                     srclist = srclist, output_file = paste0(package_directory, "/", package_file_stem, "_Dict.pdf"),
                      data_package_name = package_name,
                      dict_template = dict_template)
   
