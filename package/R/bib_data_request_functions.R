@@ -375,10 +375,7 @@ save_bibloadr_dict <- function(varfile = character(0), varlist = character(0), s
   
   # NB devmode not implemented for data dictionary - would need to be implemented in Rmd template
   database_version <- get_bibloadr_db_version()
-  
-  # concatenate subcohort list and varlist so we get has_ variables in data dictionary
-  varlist <- c(varlist, subcohort)
-  
+
   rmarkdown::render(input = dict_template,  
                     output_format = "pdf_document",
                     output_file = output_file)
