@@ -276,7 +276,7 @@ get_bibloadr_meta <- function(varfile = character(0), varlist = character(0), su
 # takes variable list, gets sources and requests stats for each
 # then merges them into one dataframe
 get_bibloadr_stats <- function(varfile = character(0), varlist = character(0), srclist = character(0),
-                               subcohort = character(0),
+                               subcohort = character(0), cohort = "BiB", 
                                testmode = FALSE, devmode = FALSE) {
   
   # get sources
@@ -294,8 +294,9 @@ get_bibloadr_stats <- function(varfile = character(0), varlist = character(0), s
   for(x in 1:nrow(src)) {
     
     dat[[x]] <- get_source_stats(source_name = src$SourceName[x],
-                               testmode = testmode,
-                               devmode = devmode)
+                                 cohort = cohort, 
+                                 testmode = testmode,
+                                 devmode = devmode)
     
     dat[[x]] <- merge(var, dat[[x]], by = "VariableName")
     
@@ -315,13 +316,13 @@ get_bibloadr_stats <- function(varfile = character(0), varlist = character(0), s
 
 # takes single sourcename parameter and retrieves stats
 # returns dataframe
-get_source_stats <- function(source_name = character(0), 
+get_source_stats <- function(source_name = character(0), cohort = "BiB",
                              testmode = FALSE, devmode = FALSE) {
   
   testmode <- ifelse(testmode, 1, 0)
 
   query_string <- paste0("EXEC [ResearchMeta].[Explorer].[GetSourceStats] @SourceName = '", 
-                        source_name, "', @TestMode = ", testmode, ";")
+                        source_name, "', @TestMode = ", testmode, ", @CohortName = '", cohort, "';")
 
   dat <- bibloadr_query(query_string, devmode, as.is = T)
   
