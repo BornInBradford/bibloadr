@@ -120,20 +120,15 @@ make_namelist <- function(namefile = character(0), namelist = character(0)) {
 }
 
 # label a dataframe's columns using meta-data provided in var_labels
-label_columns <- function (dat, var_labels, 
-                           ignore = c("ChildID", "PregnancyID", "MotherID")) {
+label_columns <- function (dat, var_labels) {
   
-  # how many columns to ignore - these must be at the left hand side
-  n_ignore <- sum(names(dat) %in% ignore)
-  # create ignore vector
-  skip <- rep(NA, n_ignore)
   # add variable attributes
-  attr(dat, "VariableLabel") <- c(skip, var_labels$VariableLabel)
-  attr(dat, "Description") <- c(skip, var_labels$Description)
-  attr(dat, "ValueType") <- c(skip, var_labels$ValueType)
-  attr(dat, "CodeSetName") <- c(skip, var_labels$CodeSetName)
-  attr(dat, "MeasureType") <- c(skip, var_labels$MeasureType)
-  attr(dat, "SourceName") <- c(skip, var_labels$SourceName)
+  attr(dat, "VariableLabel") <- c(var_labels$VariableLabel)
+  attr(dat, "Description") <- c(var_labels$Description)
+  attr(dat, "ValueType") <- c(var_labels$ValueType)
+  attr(dat, "CodeSetName") <- c(var_labels$CodeSetName)
+  attr(dat, "MeasureType") <- c(var_labels$MeasureType)
+  attr(dat, "SourceName") <- c(var_labels$SourceName)
   
   return(dat)
   
