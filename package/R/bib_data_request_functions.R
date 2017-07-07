@@ -471,7 +471,8 @@ make_data_package_multi <- function(varfile = character(0), varlist = character(
   
   # vector of sources to split
   # if wide to be combined, only select long sources
-  split_sources <- source_properties$SourceName
+  # need to remove dummy study ID sourcename as it has no level
+  split_sources <- source_properties$SourceName[!source_properties$SourceName == "studid"]
   if (combine_wide) split_sources <- source_properties$SourceName[source_properties$MultipleObservations == 1]
   wide_sources <- source_properties$SourceName[source_properties$MultipleObservations == 0]
   
