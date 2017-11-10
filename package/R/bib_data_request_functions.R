@@ -11,11 +11,11 @@ bibloadr_request_xml <- function(namelist = character(0), nametype = "variable",
     
     # required xml element tags
     el_DR <- c("<DataRequest>","</DataRequest>")
-    if(nametype == "Source") {
+    if(toupper(nametype) == "SOURCE") {
         el_Nlist <- c("<Sources>","</Sources>")
         el_Nitem <- c("<Source>","</Source>")
         el_Nattr <- c("<SourceName>","</SourceName>")
-    } else if(nametype == "Variable") {
+    } else if(toupper(nametype) == "VARIABLE") {
         el_Nlist <- c("<Variables>","</Variables>")
         el_Nitem <- c("<Variable>","</Variable>")
         el_Nattr <- c("<VariableName>","</VariableName>")
