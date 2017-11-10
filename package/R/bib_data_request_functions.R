@@ -123,6 +123,7 @@ make_namelist <- function(namefile = character(0), namelist = character(0)) {
 label_columns <- function (dat, var_labels) {
   
   var_labels <- var_labels[var_labels$VariableName %in% names(dat), ]
+  var_labels <- var_labels[!duplicated(var_labels$VariableName), ]
   
   if (nrow(var_labels) != length(dat)) stop("Number of data columns does not match number of metadata records.")
   
