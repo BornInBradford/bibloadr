@@ -122,10 +122,13 @@ make_namelist <- function(namefile = character(0), namelist = character(0)) {
 # label a dataframe's columns using meta-data provided in var_labels
 label_columns <- function (dat, var_labels) {
   
+  # drop unwanted study IDs
   var_labels <- var_labels[var_labels$VariableName %in% names(dat), ]
-  var_labels <- var_labels[!duplicated(var_labels$VariableName), ]
   
   if (nrow(var_labels) != length(dat)) stop("Number of data columns does not match number of metadata records.")
+  
+  # reorder var_labels to match columns in dat
+  var_labels <- var_labels[match(names(dat), var_labels$VariableName),]
   
   # add variable attributes
   attr(dat, "VariableLabel") <- c(var_labels$VariableLabel)
