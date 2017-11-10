@@ -122,6 +122,10 @@ make_namelist <- function(namefile = character(0), namelist = character(0)) {
 # label a dataframe's columns using meta-data provided in var_labels
 label_columns <- function (dat, var_labels) {
   
+  var_labels <- var_labels[var_labels$VariableName %in% names(dat), ]
+  
+  if (nrow(var_labels) != length(dat)) stop("Number of data columns does not match number of metadata records.")
+  
   # add variable attributes
   attr(dat, "VariableLabel") <- c(var_labels$VariableLabel)
   attr(dat, "Description") <- c(var_labels$Description)
