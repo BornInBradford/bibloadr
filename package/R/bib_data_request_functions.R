@@ -372,6 +372,35 @@ save_bibloadr_dta <- function(dat, file = character(0), about = NULL, version = 
 }
 
 
+# save data frame to csv file
+save_bibloadr_csv <- function(dat, file = character(0)) {
+  
+  # find text fields in dat and convert NAs to ""
+  convert_text_NAs <- which(attr(dat, "ValueType") == "Text")
+  if(length(convert_text_NAs > 0)) dat[,convert_text_NAs][is.na(dat[,convert_text_NAs])] <- ""
+  
+  # save file
+  write.csv(dat, file = file, na = "", row.names = F)
+  
+}
+
+# save data frame to RData file
+save_bibloadr_rdata <- function(dat, file = character(0), about = NULL) {
+  
+  # find text fields in dat and convert NAs to ""
+  convert_text_NAs <- which(attr(dat, "ValueType") == "Text")
+  if(length(convert_text_NAs > 0)) dat[,convert_text_NAs][is.na(dat[,convert_text_NAs])] <- ""
+  
+  save_list <- "dat"
+  
+  if(!is.null(about)) save_list <- c(save_list, "about")
+  
+  # save file
+  save(file = file, list = save_list)
+  
+}
+
+
 # save data dictionary
 # only supports varfile input, pdf output, no test or dev options yet
 # this is due to how the current rmd template is set up
@@ -425,8 +454,13 @@ make_data_package <- function(varfile = character(0), varlist = character(0), sr
   
   about <- paste0(package_name, " | ", get_bibloadr_db_version())
   
-  if(format == "stata") save_bibloadr_dta(dat = dat, file = paste0(package_directory, "/", package_file_stem, "_Data.dta"), 
-                                          about = about, version = stata_version)
+  if("stata" %in% format) save_bibloadr_dta(dat = dat, file = paste0(package_directory, "/", package_file_stem, "_Data.dta"), 
+                                            about = about, version = stata_version)
+  
+  if("csv" %in% format) save_bibloadr_csv(dat = dat, file = paste0(package_directory, "/", package_file_stem, "_Data.csv"))
+  
+  if("rdata" %in% format) save_bibloadr_rdata(dat = dat, file = paste0(package_directory, "/", package_file_stem, "_Data.Rdata"),
+                                            about = about)
   
   if(output_dict) save_bibloadr_dict(varfile = varfile, 
                                      varlist = varlist, subcohort = subcohort, 
