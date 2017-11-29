@@ -428,7 +428,7 @@ make_data_package <- function(varfile = character(0), varlist = character(0), sr
   if(format == "stata") save_bibloadr_dta(dat = dat, file = paste0(package_directory, "/", package_file_stem, "_Data.dta"), 
                                           about = about, version = stata_version)
   
-  if(output_dict) save_bibloadr_dict(varfile = paste0(package_directory, "/", varfile), 
+  if(output_dict) save_bibloadr_dict(varfile = varfile, 
                                      varlist = varlist, subcohort = subcohort, 
                                      srclist = srclist, output_file = paste0(package_directory, "/", package_file_stem, "_Dict.pdf"),
                      data_package_name = package_name,
@@ -468,7 +468,7 @@ make_data_package_multi <- function(varfile = character(0), varlist = character(
   }
   
   # output full dictionary if requested
-  if(full_dict) save_bibloadr_dict(varfile = paste0(package_directory, "/", varfile), varlist = varlist, subcohort = subcohort, srclist = srclist, 
+  if(full_dict) save_bibloadr_dict(varfile = varfile, varlist = varlist, subcohort = subcohort, srclist = srclist, 
                                     output_file = paste0(package_directory, "/", package_file_stem, "_Full_Dict.pdf"),
                                     data_package_name = package_name,
                                     dict_template = dict_template)
