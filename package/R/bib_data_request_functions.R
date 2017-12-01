@@ -472,6 +472,11 @@ make_data_package <- function(varfile = character(0), varlist = character(0), sr
 
 # make multi-datafile data package
 # multi-obs sources are split up
+# subcohort can be passed as vector, in which case all must be
+# valid for the level of each source, e.g. a child level subcohort
+# will cause problems with a mother level source
+# alternatively subcohort can be taken from the Collect table
+# if collect_subcohort = TRUE
 make_data_package_multi <- function(varfile = character(0), varlist = character(0), srclist = srclist, level = character(0), 
                                     subcohort = character(0),
                               allow_null_ids = FALSE, allow_hidden = FALSE, log = FALSE, testmode = FALSE, 
@@ -480,7 +485,7 @@ make_data_package_multi <- function(varfile = character(0), varlist = character(
                               package_file_stem = character(0), package_name = character(0),
                               dict_template = "BiB_data_dictionary.rmd",
                               full_dict = TRUE, multi_dict = FALSE, combine_wide = TRUE,
-                              preserve_levels = FALSE) {
+                              preserve_levels = FALSE, collect_subcohort = FALSE) {
   
   if(!file.exists(dict_template)) {
     search_dict_template <- paste0(package_directory, "/", dict_template)
@@ -491,6 +496,7 @@ make_data_package_multi <- function(varfile = character(0), varlist = character(
     }
   }
   
+  
   # validate parameters
   if(preserve_levels == FALSE && level == character(0)) stop("level is required when preserve_levels is FALSE")
   if(preserve_levels == TRUE && combine_wide == TRUE) {
@@ -500,6 +506,7 @@ make_data_package_multi <- function(varfile = character(0), varlist = character(
       warning("preserve_levels is on so level is only used for combined wide sources")
     }
   }
+  if(length(subcohort) > 0 && collect_subcohort == TRUE) stop("collect_subcohort cannot be used when subcohort is passed explicitly")
   
   # output full dictionary if requested
   if(full_dict) save_bibloadr_dict(varfile = varfile, varlist = varlist, subcohort = subcohort, srclist = srclist, 
@@ -518,12 +525,23 @@ make_data_package_multi <- function(varfile = character(0), varlist = character(
   if (combine_wide) split_sources <- source_properties$SourceName[source_properties$MultipleObservations == 1]
   wide_sources <- source_properties$SourceName[source_properties$MultipleObservations == 0]
   
+  # get subcohorts from collections if requested
+  split_subcohorts <- subcohort
+  wide_subcohorts <- subcohort
+  if(collect_subcohort) {
+    coll <- get_collections()
+    split_subcohorts <- coll$Subcohort[match(split_sources, coll$SourceName)]
+    wide_subcohorts <- coll$Subcohort[match(wide_sources, coll$SourceName)]
+  }
+  
   # output combined wide if requested
   if (combine_wide && length(wide_sources) > 0) {
     
     wide_vars <- var_source$VariableName[var_source$SourceName %in% wide_sources]
     
-    make_data_package(varlist = wide_vars, level = level, subcohort = subcohort,
+    if(is.na(wide_subcohorts)) wide_subcohorts <- character(0)
+    
+    make_data_package(varlist = wide_vars, level = level, subcohort = wide_subcohorts,
                       allow_null_ids = allow_null_ids, allow_hidden = allow_hidden, 
                       log = log, testmode = testmode, cohort = cohort, devmode = devmode, 
                       format = format, stata_version = stata_version,
@@ -544,7 +562,7 @@ make_data_package_multi <- function(varfile = character(0), varlist = character(
       
       if(preserve_levels) level <- source_properties$MeasurementLevel[source_properties$SourceName == split_sources[x]]
       
-      make_data_package(varlist = split_vars, level = level, subcohort = subcohort,
+      make_data_package(varlist = split_vars, level = level, subcohort = ifelse(is.na(split_subcohorts[x]), character(0), split_subcohorts[x]),
                         allow_null_ids = allow_null_ids, allow_hidden = allow_hidden, 
                         log = log, testmode = testmode, cohort = cohort, devmode = devmode, 
                         format = format, stata_version = stata_version,
