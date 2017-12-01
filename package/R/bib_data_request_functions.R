@@ -533,7 +533,7 @@ make_data_package_multi <- function(varfile = character(0), varlist = character(
   # need to remove dummy study ID sourcename as it has no level
   split_sources <- source_properties$SourceName[!source_properties$SourceName == "studid"]
   if (combine_wide) split_sources <- source_properties$SourceName[source_properties$MultipleObservations == 1]
-  wide_sources <- source_properties$SourceName[source_properties$MultipleObservations == 0]
+  wide_sources <- source_properties$SourceName[source_properties$MultipleObservations == 0 & !source_properties$SourceName == "studid"]
   
   # get subcohorts from collections if requested
   split_subcohorts <- subcohort
@@ -572,7 +572,11 @@ make_data_package_multi <- function(varfile = character(0), varlist = character(
       
       if(preserve_levels) level <- source_properties$MeasurementLevel[source_properties$SourceName == split_sources[x]]
       
-      make_data_package(varlist = split_vars, level = level, subcohort = ifelse(is.na(split_subcohorts[x]), character(0), split_subcohorts[x]),
+      subcohort <- split_subcohorts[x]
+      
+      if(is.na(subcohort)) subcohort = character(0)
+      
+      make_data_package(varlist = split_vars, level = level, subcohort = subcohort,
                         allow_null_ids = allow_null_ids, allow_hidden = allow_hidden, 
                         log = log, testmode = testmode, cohort = cohort, devmode = devmode, 
                         format = format, stata_version = stata_version,
