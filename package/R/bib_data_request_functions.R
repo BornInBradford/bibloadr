@@ -231,6 +231,8 @@ get_bibloadr_data <- function(varfile = character(0), varlist = character(0), sr
     
   }
   
+  if(!is.data.frame(dat)) stop(dat)
+  
   # return data frame
   return(dat)
   
@@ -270,6 +272,8 @@ get_bibloadr_meta <- function(varfile = character(0), varlist = character(0), su
   
   dat <- bibloadr_query(query_string, devmode)
   
+  if(!is.data.frame(dat)) stop(dat)
+  
   # return data frame
   return(dat)
   
@@ -306,7 +310,9 @@ get_bibloadr_stats <- function(varfile = character(0), varlist = character(0), s
   }
   
   dat <- do.call(rbind, dat)
-    
+  
+  if(!is.data.frame(dat)) stop(dat)
+  
   # return data frame
   return(dat)
   
@@ -329,6 +335,8 @@ get_source_stats <- function(source_name = character(0), cohort = "BiB",
 
   dat <- bibloadr_query(query_string, devmode, as.is = T)
   
+  if(!is.data.frame(dat)) stop(dat)
+  
   # return data frame
   return(dat)
   
@@ -344,6 +352,8 @@ get_collections <- function(testmode = FALSE, devmode = FALSE) {
   query_string <- paste0("SELECT * FROM [ResearchMeta].[", testmode, "].[CollectionCatalogue];")
   
   dat <- bibloadr_query(query_string, devmode, as.is = T)
+  
+  if(!is.data.frame(dat)) stop(dat)
   
   # return data frame
   return(dat)
