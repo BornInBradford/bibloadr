@@ -462,7 +462,7 @@ make_data_package <- function(varfile = character(0), varlist = character(0), sr
                            allow_null_ids = allow_null_ids, allow_hidden = allow_hidden,
                            log = log, testmode = testmode, cohort = cohort, devmode = devmode)
   
-  about <- paste0(package_name, " | ", get_bibloadr_db_version())
+  about <- paste0("[", get_bibloadr_db_version(), "] ", package_name)
   
   if("stata" %in% format) save_bibloadr_dta(dat = dat, file = paste0(package_directory, "/", package_file_stem, "_Data.dta"), 
                                             about = about, version = stata_version)
