@@ -536,7 +536,7 @@ make_data_package_multi <- function(varfile = character(0), varlist = character(
   wide_sources <- source_properties$SourceName[source_properties$MultipleObservations == 0 & !source_properties$SourceName == "studid"]
   
   # get subcohorts from collections if requested
-  split_subcohorts <- subcohort
+  split_subcohorts <- rep_len(subcohort, length(split_sources))
   wide_subcohorts <- subcohort
   if(collect_subcohort) {
     coll <- get_collections()
