@@ -508,9 +508,9 @@ make_data_package_multi <- function(varfile = character(0), varlist = character(
   
   
   # validate parameters
-  if(preserve_levels == FALSE && level == character(0)) stop("level is required when preserve_levels is FALSE")
+  if(preserve_levels == FALSE && length(level) == 0) stop("level is required when preserve_levels is FALSE")
   if(preserve_levels == TRUE && combine_wide == TRUE) {
-    if(level == character(0)) {
+    if(length(level) == 0) {
       stop("preserve_levels is ignored for combined wide and level is required")
     } else {
       warning("preserve_levels is on so level is only used for combined wide sources")
